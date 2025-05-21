@@ -1,0 +1,374 @@
+/* Globale Anpassungen (unverändert) */
+.card {
+  margin-top: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px;
+  border: none;
+}
+
+/* Basisgrößen (Mobile First) */
+#current-time { font-size: 40px; margin-bottom: 0.5rem; white-space: nowrap; }
+#current-time #seconds { font-size: 1em; vertical-align: baseline; margin-left: -8px; }
+.card-subtitle-custom, #islamic-date, #current-date { font-size: 0.9rem; margin-top: 5px; margin-bottom: 5px; }
+.prayer-title { font-size: 16px; font-weight: 500; }
+.prayer-title-wide { font-size: 20px; font-weight: 500; } /* Basis Desktop */
+.prayer-time { font-size: 25px; font-weight: 500; }
+#nextPrayer { font-size: 1.1rem; /* Basisgröße */ }
+
+/* --- Restliche Basisstile (Farben, Hintergründe, etc.) --- */
+.custom-font-color { color: #0F3156; }
+.custom-bg-card {
+  background: linear-gradient(14deg, #0F3156 0%, #092442 50%, #0F3156 100%);
+  background-size: 100% 100%; background-repeat: no-repeat; position: relative; color: white;
+}
+body.custom-bg {
+  display: flex; flex-direction: column; min-height: 100vh; margin: 0;
+  background: linear-gradient(14deg, #0F3156 0%, #09213D 50%, #0F3156 100%);
+  background-size: 100% 100%; background-attachment: fixed; background-repeat: no-repeat;
+  position: relative; color: white;
+}
+footer { margin-bottom: 0; }
+body.custom-bg::before {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50%);
+  opacity: 0.6; pointer-events: none; z-index: 0;
+}
+.container {
+  position: relative; z-index: 1; width: 100%;
+  max-width: 1140px; padding-right: var(--bs-gutter-x, 0.75rem);
+  padding-left: var(--bs-gutter-x, 0.75rem); margin-right: auto; margin-left: auto;
+}
+.custom-dropdown .dropdown-menu {
+  background-color: #0F3156; border: 1px solid rgba(255, 255, 255, 0.5);
+  width: auto !important; min-width: unset !important; padding: 0.25rem 0;
+}
+.custom-dropdown .dropdown-item { color: white !important; padding: 0.35rem 1rem; }
+.custom-dropdown .dropdown-item:hover, .custom-dropdown .dropdown-item:focus {
+  background-color: #145190 !important; color: white !important;
+}
+
+/* --- Hervorhebungen & Blinkeffekt (unverändert) --- */
+.custom-row-bg {
+  background-color: white; color: #0F3156 !important; border-radius: 8px;
+  margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px;
+  padding-top: 8px; padding-bottom: 8px; margin-bottom: 5px; font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.card-body .row:not(.text-center) {
+  padding-top: 8px; padding-bottom: 8px; margin-bottom: 5px; border: 1px solid transparent;
+  border-radius: 8px; margin-left: -12px; margin-right: -12px; padding-left: 12px;
+  padding-right: 12px; transition: background-color 0.3s ease, color 0.3s ease;
+}
+.card-body .row.text-center { padding-top: 8px; padding-bottom: 8px; }
+.custom-col {
+  background-color: white; border-radius: 10px; padding: 10px 15px;
+  color: #0F3156 !important; font-weight: 600; transition: background-color 0.3s ease, color 0.3s ease;
+}
+.custom-col-mobile {
+  position: relative; font-weight: 600; color: #0F3156 !important;
+  transition: color 0.3s ease; z-index: 1;
+}
+.custom-col-mobile::before {
+  content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 110px; height: calc(100% + 16px); background-color: white;
+  border-radius: 8px; z-index: -1; transition: background-color 0.3s ease;
+}
+@keyframes blinker-bg { 50% { background-color: transparent; } }
+.custom-row-bg.blink-bg { animation: blinker-bg 3s linear infinite; }
+.custom-col.blink-bg { animation: blinker-bg 3s linear infinite; }
+#colJumaaMobile.blink-bg .custom-col-mobile::before,
+#colShurukMobile.blink-bg .custom-col-mobile::before { animation: blinker-bg 3s linear infinite; }
+/* --- Ende Hervorhebungen & Blinkeffekt --- */
+
+/* Standard Desktop Spalten Inhalt */
+.col.text-center > .d-flex {
+  padding: 10px 15px; border: 1px solid transparent; border-radius: 10px;
+  color: white; transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Icon Ausrichtung */
+.align-baseline { vertical-align: baseline !important; }
+.row.mb-3.justify-content-center .bi-hourglass-split {
+  vertical-align: middle; margin-bottom: 5px; margin-right: 1px;
+}
+
+/* --- Mobile First Layout Steuerung --- */
+.mobile-prayer-layout {
+  display: block !important;
+  width: 100%;
+  max-width: 500px; /* Max-Breite für Handys */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* NEU: Padding für Gebetszeit-Karten im Handyformat anpassen */
+.mobile-prayer-layout > .card > .card-body {
+  padding-top: 0.25rem;    /* Reduziertes Padding oben */
+  padding-bottom: 0.25rem; /* Reduziertes Padding unten */
+  /* padding-left und padding-right werden von Bootstrap's .card-body geerbt (typischerweise 1rem) */
+}
+
+.desktop-prayer-layout {
+  display: none !important;
+}
+
+
+/* --- Zeit/Datum Reihe als Flex Container (Basis) --- */
+.row.mt-3.justify-content-center {
+    display: flex;
+}
+.row.mt-3 > .col-md-6 {
+    flex: 0 1 auto;
+    width: auto;
+    max-width: 90%;
+    float: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+.row.mt-3 > .col-md-6 > .card {
+    padding: 0.25rem;
+}
+
+
+/* --- Anpassungen für MITTLERE Hochkant-Tablets (z.B. iPad Mini Portrait) --- */
+@media (min-width: 768px) and (max-aspect-ratio: 1/1) {
+  .mobile-prayer-layout {
+    max-width: 650px;
+  }
+  .row.mt-3 > .col-md-6 {
+      max-width: 650px;
+  }
+  .row.mt-3 > .col-md-6 > .card { padding: 0.25rem; }
+
+  .mobile-prayer-layout .prayer-title { font-size: 18px; }
+  .mobile-prayer-layout .prayer-time { font-size: 28px; }
+  #current-time { font-size: 48px; }
+  #islamic-date, #current-date { font-size: 1.0rem; }
+  #nextPrayer { font-size: 1.2rem; }
+}
+
+/* --- Anpassungen für GROSSE Hochkant-Tablets (z.B. iPad Pro, Surface Pro Portrait) --- */
+@media (min-width: 992px) and (max-aspect-ratio: 1/1) {
+  .mobile-prayer-layout {
+    max-width: 850px;
+  }
+  .row.mt-3 > .col-md-6 {
+      max-width: 850px;
+  }
+  .row.mt-3 > .col-md-6 > .card { padding: 0.25rem }
+
+  .mobile-prayer-layout .prayer-title { font-size: 22px; }
+  .mobile-prayer-layout .prayer-time { font-size: 38px; }
+  #current-time { font-size: 65px; }
+  #islamic-date, #current-date { font-size: 1.4rem; }
+  #nextPrayer { font-size: 1.6rem; }
+}
+
+
+/* --- Desktop-spezifische Anpassungen (Breite UND Seitenverhältnis) --- */
+/* Diese Media Query ist für das Layout der Gebetszeiten etc., nicht für die Navbar hier */
+@media (min-width: 992px) and (min-aspect-ratio: 1/1) {
+
+  .desktop-prayer-layout { display: block !important; }
+  .mobile-prayer-layout { display: none !important; }
+
+  .row.mt-3.justify-content-center {
+      display: block;
+  }
+  .row.mt-3 > .col-md-6 {
+      flex: revert;
+      width: 50%;
+      max-width: none;
+      float: revert;
+      margin-left: auto;
+      margin-right: auto;
+  }
+   .row.mt-3 > .col-md-6 > .card { padding: 1.3em; }
+
+
+  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #current-time { font-size: 3em; }
+  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #current-date { font-size: 1.2em; }
+  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #islamic-date { font-size: 1.2em; }
+  .desktop-prayer-layout > .card.custom-bg-card.text-white { padding: 0.5em; }
+  .desktop-prayer-layout .prayer-title-wide { font-size: 1.5em; }
+  .desktop-prayer-layout .prayer-time { font-size: 1.9em; }
+  .col-md-4 > .d-flex.flex-column.gap-1#jumaaContainerDesktop,
+  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop { margin-top: -0.5em; margin-bottom: -0.5em; }
+  .col-md-4 > .d-flex.flex-column.gap-1#jumaaContainerDesktop .prayer-title-wide,
+  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop .prayer-title-wide { font-size: 1.5em; }
+  .col-md-4 > .d-flex.flex-column.gap-1#jumaaContainerDesktop .prayer-time,
+  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop .prayer-time { font-size: 1.9em; }
+  .desktop-prayer-layout .col { width: auto; }
+}
+
+/* ===== Navbar Anpassungen ===== */
+.navbar {
+  position: relative;
+}
+
+.navbar .container-fluid {
+  min-height: 56px;
+  display: flex;
+  flex-wrap: wrap; /* Wichtig für das Umbrechen des .navbar-collapse */
+  align-items: center;
+  /* Standard Bootstrap Padding für Mobilgeräte, wird für Desktop ggf. angepasst */
+  padding-right: 1rem;
+  padding-left: 1rem;
+  /* justify-content: space-between; /* Verteilt den Platz zwischen den Elementen */
+}
+
+.navbar-brand {
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  padding-top: 0;
+  padding-bottom: 0;
+  
+  /* Mobile First: Brand soll den mittleren Raum einnehmen */
+  flex-grow: 1; /* Erlaubt dem Brand zu wachsen */
+  text-align: center; /* Zentriert den Text innerhalb des Brand-Elements */
+  
+  /* Wichtig: margin-right entfernen oder anpassen, damit es wachsen kann */
+  margin-right: 0; /* Standardmäßig kein rechter Margin, damit es mittig wachsen kann */
+  margin-left: 0; /* Standardmäßig kein linker Margin */
+
+  font-size: 1.3rem; /* Für zweizeiliges Layout auf xs */
+  line-height: 1.2;
+  white-space: normal; /* Erlaubt Umbruch */
+  overflow: visible;
+  text-overflow: clip;
+  /* max-width ist hier knifflig, da es die Zentrierung beeinflusst.
+     Wir wollen, dass es den Raum zwischen einem gedachten linken Rand und dem Toggler füllt.
+     Die Breite des Togglers ist ca. 40-50px.
+     Wir geben dem Brand etwas Padding, um den Text nicht an den Toggler zu quetschen.
+  */
+  padding-left: 40px; /* Ungefähre Breite des Togglers + etwas Puffer */
+  padding-right: 40px;/* Ungefähre Breite des Togglers + etwas Puffer */
+  box-sizing: border-box; /* Padding wird in die Gesamtbreite einbezogen */
+}
+
+.navbar-brand .brand-line-break {
+  display: inline;
+}
+.navbar-brand .brand-line-break::before {
+  content: "\A"; /* Zeilenumbruch für xs */
+  white-space: pre;
+}
+
+.navbar-toggler {
+  z-index: 2;
+  /* Wichtig: Damit der Toggler nicht vom wachsenden Brand überdeckt wird */
+  flex-shrink: 0; /* Verhindert, dass der Toggler schrumpft, wenn nicht genug Platz ist */
+  /* margin-left: auto; /* Schiebt den Toggler ganz nach rechts, wenn Brand links wäre.
+                         Hier nicht ideal, da Brand wachsen soll. */
+}
+
+.navbar-collapse {
+  flex-basis: 100%; /* Nimmt volle Breite ein, wenn es umbricht */
+  flex-grow: 1;
+  align-items: center;
+}
+.navbar-nav {
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+  width: 100%;
+}
+.navbar-nav .nav-item {
+  width: 100%;
+}
+.navbar-nav .nav-link {
+  padding-right: 0;
+  padding-left: 0;
+  text-align: left; /* Home-Button Text linksbündig */
+  width: 100%;
+}
+
+/* --- Tablet-Ansicht (Toggler aktiv, Brand immer noch eher zentriert oder links) --- */
+@media (min-width: 768px) { /* md Breakpoint */
+  .navbar-brand {
+    white-space: nowrap; /* Einzeilig */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    /* Padding anpassen oder entfernen, je nach gewünschtem Look */
+    padding-left: 50px; /* Etwas mehr Platz für größeren Toggler/Text */
+    padding-right: 50px;
+    /* margin-right: 1rem; /* Kann beibehalten werden, wenn Brand nicht mehr wachsen soll */
+  }
+  .navbar-brand .brand-line-break::before {
+    content: ''; /* Kein expliziter Inhalt vom Pseudoelement */
+  }  
+}
+
+/* --- Desktop Ansicht (Hier kannst du die absolute Positionierung wieder verwenden, wenn gewünscht) --- */
+@media (min-width: 992px) { /* lg Breakpoint */
+  .navbar .container-fluid {
+    flex-wrap: nowrap;
+    padding-left: 60px;
+    padding-right: 60px;
+    position: relative; /* Für absolute Positionierung des Brands, falls verwendet */
+  }
+
+  .navbar-brand {
+    /* Option 1: Absolute Zentrierung (wie zuvor besprochen) */
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: center;
+    max-width: calc(100% - 120px); /* Max-Breite für absolutes Brand */
+    padding-left: 0; /* Kein Padding mehr nötig bei absoluter Positionierung */
+    padding-right: 0;
+
+    /* Option 2: Flex-Zentrierung (wenn keine absolute Positionierung) */
+    /* flex-grow: 1; */
+    /* text-align: center; */
+    /* padding-left: 0; */ /* Oder anpassen */
+    /* padding-right: 0; */ /* Oder anpassen */
+    /* max-width: 70%; */ /* Beispiel */
+
+
+    font-size: 1.6rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .navbar-brand .brand-line-break::before {
+    content: ''; /* Kein expliziter Inhalt vom Pseudoelement */
+  }
+  
+
+  .navbar-toggler {
+    display: none;
+  }
+
+  .navbar-collapse {
+    display: flex !important;
+    flex-basis: auto;
+    width: auto;
+    margin-left: auto; /* Schiebt Nav-Links nach rechts */
+  }
+  .navbar-nav {
+    flex-direction: row;
+    width: auto;
+  }
+  .navbar-nav .nav-item {
+    width: auto;
+  }
+  .navbar-nav .nav-link {
+    text-align: left;
+    width: auto;
+    padding-right: .5rem;
+    padding-left: .5rem;
+  }
+}
+/* ===== Ende Navbar Anpassungen ===== */
