@@ -185,22 +185,64 @@ body.custom-bg::before {
       margin-left: auto;
       margin-right: auto;
   }
-   .row.mt-3 > .col-md-6 > .card { padding: 1.3em; }
+   .row.mt-3 > .col-md-6 > .card { padding: 1em; }
 
 
-  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #current-time { font-size: 3em; }
-  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #current-date { font-size: 1.2em; }
-  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #islamic-date { font-size: 1.2em; }
-  .desktop-prayer-layout > .card.custom-bg-card.text-white { padding: 0.5em; }
-  .desktop-prayer-layout .prayer-title-wide { font-size: 1.5em; }
-  .desktop-prayer-layout .prayer-time { font-size: 1.9em; }
+  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #current-time { font-size: 3.5em; }
+  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #current-date { font-size: 1.8em; }
+  .col-lg-5.col-md-6 > .card.custom-bg-card.text-white.text-center #islamic-date { font-size: 1.8em; }
+  .desktop-prayer-layout > .card.custom-bg-card.text-white { padding: 0.2em; }
+  .desktop-prayer-layout .prayer-title-wide { font-size: 2.3em; }
+  .desktop-prayer-layout .prayer-time { font-size: 2.3em; }
   .col-md-4 > .d-flex.flex-column.gap-1#jumaaContainerDesktop,
-  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop { margin-top: -0.5em; margin-bottom: -0.5em; }
+  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop { margin-top: -0.2em; margin-bottom: -0.2em; }
   .col-md-4 > .d-flex.flex-column.gap-1#jumaaContainerDesktop .prayer-title-wide,
-  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop .prayer-title-wide { font-size: 1.5em; }
+  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop .prayer-title-wide { font-size: 2.3em; }
   .col-md-4 > .d-flex.flex-column.gap-1#jumaaContainerDesktop .prayer-time,
-  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop .prayer-time { font-size: 1.9em; }
+  .col-md-4 > .d-flex.flex-column.gap-1#shurukContainerDesktop .prayer-time { font-size: 2.3em; }
   .desktop-prayer-layout .col { width: auto; }
+
+}
+
+/* nextPrayer Anpassungen */
+/* Anpassungen für Desktop-Ansicht (Bildschirme breiter als 767px) */
+@media (min-width: 768px) {
+  #nextPrayerIcon {
+    width: 22px; /* Ursprünglich 16px, passe diesen Wert nach Wunsch an */
+    height: 22px;
+    margin-top: 7px; /* Ursprünglich 16px, passe diesen Wert nach Wunsch an */
+      /* nextPrayer Anpassungen */
+  /* Füge dies am Ende deiner main.css Datei hinzu */
+
+/* Anpassungen für Desktop-Ansicht (Bildschirme breiter als 767px) */
+@media (min-width: 768px) {
+  #nextPrayerIcon {
+    width: 28px; /* Ursprünglich 16px, passe diesen Wert nach Wunsch an */
+    height: 28px; /* Ursprünglich 16px, passe diesen Wert nach Wunsch an */
+    vertical-align: middle; /* Hilft bei der Ausrichtung mit dem Text */
+    /* Der inline margin-bottom: 5px; wird hier nicht direkt überschrieben,
+       könnte aber bei Bedarf mit margin-bottom: 0 !important; angepasst werden.
+       Oder du fügst einen margin-right hinzu für Abstand zum Text: */
+    margin-right: 8px;
+  }
+
+  #nextPrayer {
+    font-size: 1.6rem !important; /* Ursprünglich 1.1rem inline, passe Wert an */
+    /* !important wird benötigt, um den Inline-Style style="font-size: 1.1rem;" zu überschreiben. */
+    vertical-align: middle; /* Hilft bei der Ausrichtung mit dem Icon */
+  }
+}/* Hilft bei der Ausrichtung mit dem Text */
+    /* Der inline margin-bottom: 5px; wird hier nicht direkt überschrieben,
+       könnte aber bei Bedarf mit margin-bottom: 0 !important; angepasst werden.
+       Oder du fügst einen margin-right hinzu für Abstand zum Text: */
+    margin-right: 8px;
+  }
+
+  #nextPrayer {
+    font-size: 1.6rem !important; /* Ursprünglich 1.1rem inline, passe Wert an */
+    /* !important wird benötigt, um den Inline-Style style="font-size: 1.1rem;" zu überschreiben. */
+    vertical-align: middle; /* Hilft bei der Ausrichtung mit dem Icon */
+  }
 }
 
 /* ===== Navbar Anpassungen ===== */
@@ -336,7 +378,7 @@ body.custom-bg::before {
     /* max-width: 70%; */ /* Beispiel */
 
 
-    font-size: 1.6rem;
+    font-size: 2rem;
     line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
