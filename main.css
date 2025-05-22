@@ -67,7 +67,7 @@ body.custom-bg::before {
 
 /* ===== TYPOGRAFIE (Basis Mobile First) ===== */
 #current-time {
-  font-size: 40px; /* Bleibt für die Hauptuhrzeit größer */
+  font-size: 40px;
   margin-bottom: 0.5rem;
   white-space: nowrap;
 }
@@ -77,17 +77,16 @@ body.custom-bg::before {
   margin-left: -8px;
 }
 
-.prayer-title { /* Basisgröße für Gebetstitel im mobilen Layout */
-  font-size: 16px; /* Entspricht ca. 1rem bei Standard-Browser-Einstellung */
+.prayer-title {
+  font-size: 16px;
   font-weight: 500;
 }
 
-/* NEU: Anpassung für Handy-Format (Basis) */
 #islamic-date,
 #current-date,
 #nextPrayer {
-  font-size: 16px; /* Gleiche Größe wie .prayer-title */
-  vertical-align: middle; /* Für #nextPrayer wichtig */
+  font-size: 16px;
+  vertical-align: middle;
 }
 #islamic-date, #current-date {
   margin-top: 5px;
@@ -95,12 +94,11 @@ body.custom-bg::before {
 }
 
 #nextPrayerIcon {
-  width: 16px; /* Angepasst an 16px Schriftgröße */
+  width: 16px;
   height: 16px;
   vertical-align: middle;
   margin-right: 5px;
 }
-
 
 .prayer-title-wide {
   font-size: 20px;
@@ -108,20 +106,17 @@ body.custom-bg::before {
 }
 
 .prayer-time {
-  font-size: 25px;
+  font-size: 25px; /* Basisgröße, wird in Media Queries angepasst */
   font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums; /* NEU: Ziffern mit gleicher Breite */
 }
-
 
 /* ===== HERVORHEBUNGEN & BLINKEFFEKT ===== */
 .custom-row-bg {
   background-color: white;
   color: #0f3156 !important;
   border-radius: 8px;
-  margin-left: -1rem;
-  margin-right: -1rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
   padding-top: 8px;
   padding-bottom: 8px;
   margin-bottom: 5px;
@@ -193,9 +188,27 @@ body.custom-bg::before {
   margin-right: auto;
 }
 
+/* Flexbox-Layout für die Zeilen im mobilen Gebetsplan */
 .mobile-prayer-layout > .card:first-of-type .card-body > .row {
+  display: flex;
+  align-items: center;
   margin-bottom: 0.4rem;
+  /* Bootstrap .row hat standardmäßig negative Margins, die hier ok sind,
+     um das Padding der .col-Kinder auszugleichen. */
 }
+
+.mobile-prayer-layout .prayer-name-column { /* Dies ist ein .col */
+  padding-right: 0.5rem; /* Abstand zwischen Name und Zeit */
+  flex-shrink: 0; /* Verhindert, dass die Namensspalte zu stark schrumpft */
+  /* Die Breite wird implizit durch den Inhalt und flex-shrink bestimmt */
+}
+
+.mobile-prayer-layout .prayer-time-column { /* Dies ist ein .col */
+  flex-grow: 1; /* Nimmt den restlichen Platz ein */
+  text-align: right; /* Richtet den Inhalt (das .prayer-time span) rechts aus */
+}
+
+
 .mobile-prayer-layout > .card:first-of-type .card-body > .row:last-child {
   margin-bottom: 0;
 }
@@ -265,13 +278,6 @@ body.custom-bg::before {
 
 /* --- Tablets (md) und größere Anpassungen --- */
 @media (min-width: 768px) {
-  /* Die Basisgrößen für #islamic-date, #current-date, #nextPrayer und #nextPrayerIcon
-     sind bereits im globalen Scope auf 16px gesetzt und passen hier,
-     da .prayer-title auf Tablets nicht explizit vergrößert wird,
-     es sei denn in spezifischeren Media Queries wie (max-aspect-ratio).
-     Daher sind hier keine spezifischen Änderungen für diese Elemente nötig,
-     es sei denn, .prayer-title würde hier auch geändert. */
-
   .navbar-brand {
     white-space: nowrap;
     overflow: hidden;
@@ -293,18 +299,17 @@ body.custom-bg::before {
 /* --- Hochkant-Tablets (md und lg) --- */
 @media (min-width: 768px) and (max-aspect-ratio: 1/1) {
   .mobile-prayer-layout { max-width: 650px; }
-  .mobile-prayer-layout .prayer-title { font-size: 18px; } /* Gebetstitel wird hier größer */
-  .mobile-prayer-layout .prayer-time { font-size: 28px; }
+  .mobile-prayer-layout .prayer-title { font-size: 18px; }
+  .mobile-prayer-layout .prayer-time { font-size: 28px; /* tabular-nums greift hier */ }
   #current-time { font-size: 48px; }
 
-  /* NEU: Anpassung für Hochkant-Tablet */
   #islamic-date,
   #current-date,
   #nextPrayer {
-    font-size: 18px; /* Angleichung an .prayer-title in diesem Viewport */
+    font-size: 18px;
   }
   #nextPrayerIcon {
-    width: 18px; /* Angepasst an 18px Schriftgröße */
+    width: 18px;
     height: 18px;
     margin-right: 6px;
   }
@@ -312,18 +317,17 @@ body.custom-bg::before {
 
 @media (min-width: 992px) and (max-aspect-ratio: 1/1) {
   .mobile-prayer-layout { max-width: 850px; }
-  .mobile-prayer-layout .prayer-title { font-size: 22px; } /* Gebetstitel wird hier größer */
-  .mobile-prayer-layout .prayer-time { font-size: 38px; }
+  .mobile-prayer-layout .prayer-title { font-size: 22px; }
+  .mobile-prayer-layout .prayer-time { font-size: 38px; /* tabular-nums greift hier */ }
   #current-time { font-size: 65px; }
 
-  /* NEU: Anpassung für großes Hochkant-Tablet */
   #islamic-date,
   #current-date,
   #nextPrayer {
-    font-size: 22px; /* Angleichung an .prayer-title in diesem Viewport */
+    font-size: 22px;
   }
   #nextPrayerIcon {
-    width: 22px; /* Angepasst an 22px Schriftgröße */
+    width: 22px;
     height: 22px;
     margin-right: 7px;
   }
@@ -370,7 +374,6 @@ body.custom-bg::before {
   .navbar-nav .nav-item { width: auto; }
   .navbar-nav .nav-link { text-align: left; width: auto; padding-right: .5rem; padding-left: .5rem; }
 
-  /* Desktop: #nextPrayer und Icon behalten ihre größeren, unabhängigen Größen */
   #nextPrayerIcon {
     width: 28px;
     height: 28px;
@@ -379,14 +382,11 @@ body.custom-bg::before {
   #nextPrayer {
     font-size: 1.6rem;
   }
-  /* Desktop: Datumstexte in der mittleren Card behalten ihre eigenen Größen */
   .row.mt-2.mb-2.justify-content-center.align-items-center > div.col-lg-4 #current-date,
   .row.mt-2.mb-2.justify-content-center.align-items-center > div.col-lg-4 #islamic-date {
       font-size: 1.6rem;
   }
 
-
-  /* Seitliche Shuruk/Jumaa Cards: Schriftgrößen und Padding */
   .row.mt-2.mb-2.justify-content-center.align-items-center .card .card-body {
       padding: 1.2rem 1.5rem;
   }
@@ -395,7 +395,7 @@ body.custom-bg::before {
     margin-bottom: 0.6rem;
   }
   .row.mt-2.mb-2.justify-content-center.align-items-center .card .prayer-time {
-    font-size: 3.2rem;
+    font-size: 3.2rem; /* tabular-nums greift auch hier, falls die Schriftart es unterstützt */
   }
   #jumaaCardDesktopSide .card-body > .d-flex.custom-col {
     padding: 1.2rem 1.5rem;
@@ -405,7 +405,6 @@ body.custom-bg::before {
       color: #0F3156 !important;
   }
 
-  /* Datumskarte in der Mitte: Größer */
   .row.mt-2.mb-2.justify-content-center.align-items-center > div.col-lg-4 .card-body {
      padding-top: 1.8rem;
      padding-bottom: 1.8rem;
@@ -414,8 +413,6 @@ body.custom-bg::before {
       font-size: 5rem;
   }
 
-
-  /* Haupt-Gebetszeiten im Desktop Layout: Breiter und größer */
   .desktop-prayer-layout > .card.custom-bg-card.text-white {
       padding: 1.5em;
       margin-left: calc(var(--bs-gutter-x) * -.5);
@@ -433,10 +430,9 @@ body.custom-bg::before {
       font-size: 3rem;
   }
   .desktop-prayer-layout .prayer-time {
-      font-size: 4rem;
+      font-size: 4rem; /* tabular-nums greift auch hier */
   }
 
-  /* Alte Jumaa/Shuruk Card unter Hauptgebeten ausblenden */
   .desktop-prayer-layout #original-desktop-jumaa-shuruk-card-bottom {
     display: none !important;
   }
