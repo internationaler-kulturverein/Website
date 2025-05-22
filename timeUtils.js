@@ -1,7 +1,13 @@
 // timeUtils.js
 // Enthält Hilfsfunktionen zur Zeitberechnung und -formatierung.
 
-import { useOverrideDate, overrideDate, useOverrideTime, overrideTime, overrideTimeSetAt } from './debug.js';
+import {
+    useOverrideDate,
+    overrideDate,
+    useOverrideTime,
+    overrideTime,
+    overrideTimeSetAt,
+} from './debug.js'; // Annahme: Diese Datei existiert und exportiert die Variablen
 import { timeOffset } from './main.js'; // Importiere timeOffset aus main.js
 
 /**
@@ -18,14 +24,18 @@ export function getCurrentTime() {
     }
 
     if (useOverrideTime && overrideTime && overrideTimeSetAt) {
-        const realElapsedMs = new Date().getTime() - overrideTimeSetAt.getTime();
+        const realElapsedMs =
+            new Date().getTime() - overrideTimeSetAt.getTime();
         baseDate.setHours(overrideTime.getHours());
         baseDate.setMinutes(overrideTime.getMinutes());
         baseDate.setSeconds(overrideTime.getSeconds());
+        // Wende den Zeitunterschied seit dem Setzen der Override-Zeit an
         return new Date(baseDate.getTime() + realElapsedMs);
     } else {
         if (useOverrideDate) {
-            const now = new Date();
+            // Wenn nur overrideDate gesetzt ist, aber nicht overrideTime,
+            // nimm das Datum von overrideDate und die aktuelle Uhrzeit des Systems.
+            const now = new Date(); // Aktuelle Systemzeit für H, M, S
             baseDate.setHours(
                 now.getHours(),
                 now.getMinutes(),
@@ -33,18 +43,25 @@ export function getCurrentTime() {
                 now.getMilliseconds()
             );
         }
-        // Wende den globalen Zeitoffset an
-        return new Date(baseDate.getTime() - timeOffset);
+        // Wende den globalen Zeitoffset an, falls vorhanden und eine Zahl
+        const offset = typeof timeOffset === 'number' ? timeOffset : 0;
+        return new Date(baseDate.getTime() - offset);
     }
 }
 
 /**
  * Parst einen Zeitstring (HH:MM) und gibt ein Date-Objekt zurück.
  * @param {string} timeString - Der Zeitstring im Format HH:MM.
- * @param {Date} [dateContext=new Date()] - Das Datum, auf das die Zeit angewendet werden soll.
+ * @param {Date} [dateContextParam] - Das Datum, auf das die Zeit angewendet werden soll.
+ *                                    Standard ist die von getCurrentTime() gelieferte Zeit.
  * @returns {Date|null} Das Date-Objekt oder null bei einem Fehler.
  */
-export function parsePrayerTime(timeString, dateContext = new Date()) {
+export function parsePrayerTime(timeString, dateContextParam) {
+    // Wenn kein dateContextParam übergeben wird, nutze getCurrentTime() als Basis.
+    const dateContext = dateContextParam
+        ? new Date(dateContextParam)
+        : getCurrentTime();
+
     if (
         !timeString ||
         typeof timeString !== 'string' ||
@@ -72,8 +89,9 @@ export function parsePrayerTime(timeString, dateContext = new Date()) {
             console.warn(`Ungültige Stunden/Minuten in Zeitstring: ${timeString}`);
             return null;
         }
-        const date = new Date(dateContext);
-        date.setHours(hours, minutes, 0, 0);
+        // Erstelle eine neue Date-Instanz vom Kontext, um den Kontext nicht zu verändern
+        const date = new Date(dateContext.getTime());
+        date.setHours(hours, minutes, 0, 0); // Sekunden und Millisekunden auf 0 setzen
         return date;
     } catch (e) {
         console.error(`Fehler beim Parsen des Zeitstrings "${timeString}":`, e);
@@ -85,19 +103,63 @@ export function parsePrayerTime(timeString, dateContext = new Date()) {
  * Berechnet die Endzeit des Adhan basierend auf der Startzeit und Dauer.
  * @param {object} prayerConfig - Das Konfigurationsobjekt des Gebets.
  * @param {Date} prayerStartDate - Die Startzeit des Gebets.
- * @returns {Date} Die Endzeit des Adhan.
+ * @returns {Date} Die Endzeit des Adhan (eine neue Date-Instanz).
  */
 export function getAdhanEndTime(prayerConfig, prayerStartDate) {
+    // Erstelle immer eine Kopie, um das Original nicht zu verändern
+    const endDate = new Date(prayerStartDate.getTime());
+
     if (
         !prayerConfig ||
-        !prayerStartDate ||
-        prayerConfig.adhanDurationMinutes === 0
+        typeof prayerConfig.adhanDurationMinutes !== 'number' ||
+        prayerConfig.adhanDurationMinutes <= 0 // Dauer muss positiv sein für eine Änderung
     ) {
-        return prayerStartDate; // Keine Dauer, Endzeit = Startzeit
+        return endDate; // Keine gültige Dauer, Endzeit = Startzeit
     }
-    const endDate = new Date(prayerStartDate.getTime());
+
     endDate.setMinutes(
         endDate.getMinutes() + prayerConfig.adhanDurationMinutes
     );
     return endDate;
+}
+
+/**
+ * Berechnet die Endzeit der Iqama basierend auf der Adhan-Endzeit und Dauer.
+ * @param {object} prayerConfig - Das Konfigurationsobjekt des Gebets.
+ * @param {Date} adhanEndTime - Die Endzeit des Adhans.
+ * @returns {Date} Die Endzeit der Iqama (eine neue Date-Instanz).
+ */
+export function getIqamaEndTime(prayerConfig, adhanEndTime) {
+    // Erstelle immer eine Kopie, um das Original nicht zu verändern
+    const iqamaEndTimeResult = new Date(adhanEndTime.getTime());
+
+    if (
+        !prayerConfig ||
+        typeof prayerConfig.iqamaDurationMinutes !== 'number' ||
+        prayerConfig.iqamaDurationMinutes < 0 // Dauer kann 0 sein (keine Iqama-Verzögerung), aber nicht negativ
+    ) {
+        return iqamaEndTimeResult; // Keine gültige Dauer, Endzeit = Adhan-Endzeit
+    }
+
+    if (prayerConfig.iqamaDurationMinutes > 0) {
+        iqamaEndTimeResult.setMinutes(
+            iqamaEndTimeResult.getMinutes() + prayerConfig.iqamaDurationMinutes
+        );
+    }
+    return iqamaEndTimeResult;
+}
+
+/**
+ * Formatiert ein Date-Objekt in einen "HH:MM"-String.
+ * @param {Date} date - Das zu formatierende Date-Objekt.
+ * @returns {string} Die formatierte Zeit oder "Ungültig" bei Fehlern.
+ */
+export function formatTime(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        // console.warn('Ungültiges Datum für formatTime:', date); // Optional für Debugging
+        return 'Ungültig';
+    }
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
 }
