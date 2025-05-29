@@ -6,7 +6,7 @@ export const prayerTimesConfig = [
         name: 'Fajr',
         idMobileRow: 'rowFajr',
         idTimeMobile: 'Fajr',
-        idTimeDesktop: 'Fajr_wide', // Für Haupt-Desktop-Block
+        idTimeDesktop: 'Fajr_wide',
         adhanDurationMinutes: 2,
         iqamaDurationMinutes: 10,
     },
@@ -14,7 +14,7 @@ export const prayerTimesConfig = [
         name: 'Dhuhr',
         idMobileRow: 'rowDhuhr',
         idTimeMobile: 'Dhuhr',
-        idTimeDesktop: 'Dhuhr_wide', // Für Haupt-Desktop-Block
+        idTimeDesktop: 'Dhuhr_wide',
         adhanDurationMinutes: 2,
         iqamaDurationMinutes: 10,
     },
@@ -22,7 +22,7 @@ export const prayerTimesConfig = [
         name: 'Asr',
         idMobileRow: 'rowAsr',
         idTimeMobile: 'Asr',
-        idTimeDesktop: 'Asr_wide', // Für Haupt-Desktop-Block
+        idTimeDesktop: 'Asr_wide',
         adhanDurationMinutes: 2,
         iqamaDurationMinutes: 10,
     },
@@ -30,16 +30,16 @@ export const prayerTimesConfig = [
         name: 'Maghrib',
         idMobileRow: 'rowMaghrib',
         idTimeMobile: 'Maghrib',
-        idTimeDesktop: 'Maghrib_wide', // Für Haupt-Desktop-Block
+        idTimeDesktop: 'Maghrib_wide',
         adhanDurationMinutes: 2,
         iqamaDurationMinutes: 5,
     },
     {
-        name: 'Isha', // Name in prayerLogic.js ist 'Isha'
-        displayName: 'Ishaa', // Angezeigter Name, falls abweichend
+        name: 'Isha',
+        displayName: 'Ishaa',
         idMobileRow: 'rowIshaa',
-        idTimeMobile: 'Isha', // ID des Zeit-Elements
-        idTimeDesktop: 'Isha_wide', // Für Haupt-Desktop-Block
+        idTimeMobile: 'Isha',
+        idTimeDesktop: 'Isha_wide',
         adhanDurationMinutes: 2,
         iqamaDurationMinutes: 10,
     },
@@ -47,53 +47,35 @@ export const prayerTimesConfig = [
 
 export const jumaaConfig = {
     name: 'Jumaa',
-    // Mobile IDs
-    idMobileRow: null, // Jumaa hat im Mobile-Layout oft eine eigene Spalte, keine ganze Zeile
-    idMobileCol: 'colJumaaMobile', // ID der Spalte für Jumaa im Mobile-Layout
-    idTimeMobile: 'Jumaa', // ID des Zeit-Elements in der mobilen Ansicht
-
-    // Desktop IDs
-    // idTimeDesktop: 'Jumaa_wide', // Alte ID für Zeit im unteren Jumaa/Shuruk Block
-    // idDesktopContainer: 'jumaaContainerDesktop', // Alte ID des Containers im unteren Block
-
-    // NEU: Für die seitliche Desktop-Card
-    idDesktopCard: 'jumaaCardDesktopSide', // ID der gesamten seitlichen Jumaa-Card für Highlighting
-    idTimeDesktopSide: 'Jumaa_desktop_side', // ID des Zeit-Elements in der seitlichen Card (für Befüllung durch ui.js)
-
+    idMobileCol: 'colJumaaMobile',
+    idTimeMobile: 'Jumaa',
+    idDesktopCard: 'jumaaCardDesktopSide',
+    idTimeDesktopSide: 'Jumaa_desktop_side',
     adhanDurationMinutes: 2,
     iqamaDurationMinutes: 10,
 };
 
 export const sunriseConfig = {
     name: 'Sunrise',
-    displayName: 'Shuruk', // Angezeigter Name
-    // Mobile IDs
-    idMobileRow: null,
+    displayName: 'Shuruk',
     idMobileCol: 'colShurukMobile',
     idTimeMobile: 'Sunrise',
-
-    // Desktop IDs
-    // idTimeDesktop: 'Sunrise_wide', // Alt
-    // idDesktopContainer: 'shurukContainerDesktop', // Alt
-
-    // NEU: Für die seitliche Desktop-Card
-    idDesktopCard: null, // Hier könntest du 'shurukCardDesktopSide' eintragen, falls Shuruk hervorgehoben werden soll
     idTimeDesktopSide: 'Sunrise_desktop_side',
-
     adhanDurationMinutes: 0,
     iqamaDurationMinutes: 0,
 };
 
 export const highlightClassNameMobile = 'custom-row-bg';
-export const highlightClassNameDesktop = 'custom-col'; // Diese Klasse wird für das Desktop-Highlighting verwendet
+export const highlightClassNameDesktop = 'custom-col';
 
-// API Konfiguration
-export const latitude = 49.0034;
-export const longitude = 12.1213;
-export const calculationMethod = 99;
-export const methodSettingsParam = '12.55,,12.65';
-export const tuneOffsets = '0,0,0,5,0,3,0,0,0';
+// API Konfiguration (für HIJRI_MODE = 'api')
+export const latitude = 49.0034; // Beispiel: Regensburg
+export const longitude = 12.1213; // Beispiel: Regensburg
+export const calculationMethod = 99; // Für Custom Settings
+export const methodSettingsParam = '12.55,,12.65'; // Beispiel: Fajr 12.55°, Isha 12.65°
+export const tuneOffsets = '0,0,0,5,0,3,0,0,0'; // Beispiel: Maghrib +5 Min, Isha +3 Min
 
+// Übersetzung der englischen Monats-Schlüssel zu deutschen Namen
 export const hijriMonthMap = {
     Muharram: 'Muharram',
     Safar: 'Safar',
@@ -107,4 +89,33 @@ export const hijriMonthMap = {
     Shawwāl: 'Schauwāl',
     "Dhū al-Qa'dah": "Dhū l-Qaʿda",
     "Dhū al-Ḥijjah": "Dhū l-Hiddscha",
+};
+
+// Feste Reihenfolge der Monats-Schlüssel für die Zählung im manuellen Modus
+export const hijriMonthOrder = [
+    'Muharram', 'Safar', "Rabī' al-awwal", "Rabī' al-thānī",
+    "Jumādā al-ūlā", "Jumādā al-ākhirah", 'Rajab', "Sha'bān",
+    'Ramadān', 'Shawwāl', "Dhū al-Qa'dah", "Dhū al-Ḥijjah"
+];
+
+// --- MODUS-EINSTELLUNG FÜR HIJRI-DATUM ---
+// 'api': Verwendet die Aladhan API für das Hijri-Datum.
+// 'manual': Verwendet die untenstehenden MANUAL_SETTINGS und zählt clientseitig weiter.
+export const HIJRI_MODE = 'manual'; // ÄNDERE DIES ZU 'api' oder 'manual'
+
+// --- EINSTELLUNGEN FÜR MANUAL_MODE ---
+// Diese Werte werden verwendet, wenn HIJRI_MODE = 'manual' ist.
+// Passe diese an, um den Startpunkt für die manuelle Zählung festzulegen.
+export const MANUAL_SETTINGS = {
+    // Der islamische Tag, der am Abend des START_GREGORIAN_DATE_STR beginnt.
+    START_HIJRI_DAY: 1,
+    // Der englische Schlüssel des Monats (muss in hijriMonthOrder und hijriMonthMap existieren).
+    START_HIJRI_MONTH_KEY: "Dhū al-Ḥijjah",
+    // Das islamische Jahr.
+    START_HIJRI_YEAR: 1446,
+    // Das gregorianische Datum (Format YYYY-MM-DD), an dessen *Abend* (nach Maghrib)
+    // der oben definierte START_HIJRI_DAY beginnt.
+    // Beispiel: Wenn der 1. Ramadan am Abend des 27. Februar beginnt,
+    // dann ist START_GREGORIAN_DATE_STR = "2025-02-27".
+    START_GREGORIAN_DATE_STR: "2025-05-28",
 };
