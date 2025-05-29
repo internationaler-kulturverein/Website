@@ -6,7 +6,7 @@ import {
     jumaaConfig,
     sunriseConfig,
     highlightClassNameMobile,
-    highlightClassNameDesktop, // Dies ist 'custom-col'
+    highlightClassNameDesktop,
     hijriMonthMap,
 } from './config.js';
 import { getCurrentTime } from './timeUtils.js';
@@ -17,8 +17,8 @@ import {
     prayerTimesData,
     lastHighlightUpdateMinute,
     setLastHighlightMinute,
-    setDisplayedIslamicDate,
     setPrayerTimesData,
+    setDisplayedIslamicDateObject,
 } from './main.js';
 
 /**
@@ -26,21 +26,13 @@ import {
  * @param {object} currentPrayerTimes - Das Objekt mit den Gebetszeiten.
  */
 export function updatePrayerTimesUI(currentPrayerTimes) {
-    const allDisplayConfigs = [...prayerTimesConfig, sunriseConfig]; // Jumaa wird separat behandelt
+    const timesToDisplay = currentPrayerTimes || prayerTimesData;
+    const allDisplayConfigs = [...prayerTimesConfig, sunriseConfig];
 
     allDisplayConfigs.forEach((config) => {
-        let timeValue = prayerTimesData[config.name]
-            ? prayerTimesData[config.name].substring(0, 5)
+        let timeValue = timesToDisplay[config.name]
+            ? timesToDisplay[config.name].substring(0, 5)
             : '--:--';
-
-        if (
-            currentPrayerTimes &&
-            currentPrayerTimes[config.name] &&
-            config.name !== 'Jumaa' &&
-            config.name !== 'Sunrise'
-        ) {
-            timeValue = currentPrayerTimes[config.name].substring(0, 5);
-        }
 
         const timeElementMobile = document.getElementById(config.idTimeMobile);
         if (timeElementMobile) timeElementMobile.textContent = timeValue;
@@ -49,17 +41,15 @@ export function updatePrayerTimesUI(currentPrayerTimes) {
             const timeElementDesktop = document.getElementById(config.idTimeDesktop);
             if (timeElementDesktop) timeElementDesktop.textContent = timeValue;
         }
-
         if (config.name === 'Sunrise' && config.idTimeDesktopSide) {
             const sunriseDesktopSideEl = document.getElementById(config.idTimeDesktopSide);
             if (sunriseDesktopSideEl) sunriseDesktopSideEl.textContent = timeValue;
         }
     });
 
-    const jumaaTimeString = prayerTimesData['Jumaa'];
+    const jumaaTimeString = timesToDisplay['Jumaa'];
     if (jumaaTimeString) {
         const jumaaTimeValue = jumaaTimeString.substring(0, 5);
-
         if (jumaaConfig.idTimeMobile) {
             const jumaaMobileEl = document.getElementById(jumaaConfig.idTimeMobile);
             if (jumaaMobileEl) jumaaMobileEl.textContent = jumaaTimeValue;
@@ -67,6 +57,15 @@ export function updatePrayerTimesUI(currentPrayerTimes) {
         if (jumaaConfig.idTimeDesktopSide) {
             const jumaaDesktopSideEl = document.getElementById(jumaaConfig.idTimeDesktopSide);
             if (jumaaDesktopSideEl) jumaaDesktopSideEl.textContent = jumaaTimeValue;
+        }
+    } else {
+        if (jumaaConfig.idTimeMobile) {
+            const jumaaMobileEl = document.getElementById(jumaaConfig.idTimeMobile);
+            if (jumaaMobileEl) jumaaMobileEl.textContent = '--:--';
+        }
+        if (jumaaConfig.idTimeDesktopSide) {
+            const jumaaDesktopSideEl = document.getElementById(jumaaConfig.idTimeDesktopSide);
+            if (jumaaDesktopSideEl) jumaaDesktopSideEl.textContent = '--:--';
         }
     }
 }
@@ -83,6 +82,7 @@ export function displayError(message) {
     if (elements.nextPrayerIcon) {
         elements.nextPrayerIcon.style.display = 'none';
     }
+    if (elements.islamicDate) elements.islamicDate.textContent = 'Fehler';
 }
 
 /**
@@ -91,52 +91,32 @@ export function displayError(message) {
  */
 export function highlightPrayer(prayerToHighlight) {
     if (!initialDataLoaded) return;
-
     const allHighlightableConfigs = [...prayerTimesConfig, jumaaConfig];
 
-    // 1. Alle Hervorhebungen entfernen
     allHighlightableConfigs.forEach((config) => {
-        // Mobile Hervorhebung entfernen
         if (config.idMobileRow) {
             const mobileRowElement = document.getElementById(config.idMobileRow);
-            if (mobileRowElement) {
-                mobileRowElement.classList.remove(highlightClassNameMobile, 'blink-bg');
-            }
+            if (mobileRowElement) mobileRowElement.classList.remove(highlightClassNameMobile, 'blink-bg');
         }
         if (config.idMobileCol) {
             const mobileColElement = document.getElementById(config.idMobileCol);
-            if (mobileColElement) {
-                mobileColElement.classList.remove(highlightClassNameMobile, 'blink-bg');
-            }
+            if (mobileColElement) mobileColElement.classList.remove(highlightClassNameMobile, 'blink-bg');
         }
-
-        // Desktop Hervorhebung entfernen
         let desktopHighlightTarget = null;
         if (config.name === 'Jumaa' && config.idDesktopCard) {
             const jumaaCard = document.getElementById(config.idDesktopCard);
-            if (jumaaCard) {
-                // Ziel ist das innere d-flex Element der Jumaa Card
-                desktopHighlightTarget = jumaaCard.querySelector('.card-body > .d-flex');
-            }
-        } else if (config.idTimeDesktop && !config.idDesktopCard) { // Für Fajr-Isha Hauptblock
+            if (jumaaCard) desktopHighlightTarget = jumaaCard.querySelector('.card-body > .d-flex');
+        } else if (config.idTimeDesktop && !config.idDesktopCard) {
             const timeElementDesktop = document.getElementById(config.idTimeDesktop);
-            if (timeElementDesktop) {
-                desktopHighlightTarget = timeElementDesktop.closest('.d-flex.flex-column');
-            }
+            if (timeElementDesktop) desktopHighlightTarget = timeElementDesktop.closest('.d-flex.flex-column');
         }
-
-        if (desktopHighlightTarget) {
-            desktopHighlightTarget.classList.remove(highlightClassNameDesktop, 'blink-bg');
-        }
+        if (desktopHighlightTarget) desktopHighlightTarget.classList.remove(highlightClassNameDesktop, 'blink-bg');
     });
 
-    // 2. Neue Hervorhebung setzen
     if (prayerToHighlight) {
         const useBlinking = prayerToHighlight.isAdhanTime === true;
         const currentPrayerConfig = allHighlightableConfigs.find(c => c.name === prayerToHighlight.name);
-
         if (currentPrayerConfig) {
-            // Mobile Hervorhebung setzen
             if (currentPrayerConfig.idMobileRow) {
                 const nextMobileRowElement = document.getElementById(currentPrayerConfig.idMobileRow);
                 if (nextMobileRowElement) {
@@ -151,32 +131,21 @@ export function highlightPrayer(prayerToHighlight) {
                     if (useBlinking) nextMobileColElement.classList.add('blink-bg');
                 }
             }
-
-            // Desktop Hervorhebung setzen
             let nextDesktopHighlightTarget = null;
             if (currentPrayerConfig.name === 'Jumaa' && currentPrayerConfig.idDesktopCard) {
                 const jumaaCard = document.getElementById(currentPrayerConfig.idDesktopCard);
-                if (jumaaCard) {
-                    // Ziel ist das innere d-flex Element der Jumaa Card
-                    nextDesktopHighlightTarget = jumaaCard.querySelector('.card-body > .d-flex');
-                }
+                if (jumaaCard) nextDesktopHighlightTarget = jumaaCard.querySelector('.card-body > .d-flex');
             } else if (currentPrayerConfig.idTimeDesktop && !currentPrayerConfig.idDesktopCard) {
                 const nextTimeElementDesktop = document.getElementById(currentPrayerConfig.idTimeDesktop);
-                if (nextTimeElementDesktop) {
-                    nextDesktopHighlightTarget = nextTimeElementDesktop.closest('.d-flex.flex-column');
-                }
+                if (nextTimeElementDesktop) nextDesktopHighlightTarget = nextTimeElementDesktop.closest('.d-flex.flex-column');
             }
-
             if (nextDesktopHighlightTarget) {
-                nextDesktopHighlightTarget.classList.add(highlightClassNameDesktop); // highlightClassNameDesktop ist 'custom-col'
-                if (useBlinking) {
-                    nextDesktopHighlightTarget.classList.add('blink-bg');
-                }
+                nextDesktopHighlightTarget.classList.add(highlightClassNameDesktop);
+                if (useBlinking) nextDesktopHighlightTarget.classList.add('blink-bg');
             }
         }
     }
 }
-
 
 /**
  * Aktualisiert die Anzeige des Countdowns/Status zur nächsten Gebetszeit.
@@ -184,20 +153,14 @@ export function highlightPrayer(prayerToHighlight) {
  * @param {object|null} nextPrayerForText
  * @param {Date} now
  */
-export function updateNextPrayerTimerDisplay(
-    prayerToHighlight,
-    nextPrayerForText,
-    now
-) {
+export function updateNextPrayerTimerDisplay(prayerToHighlight, nextPrayerForText, now) {
     if (!elements.nextPrayer) return;
     const iconElement = elements.nextPrayerIcon;
-
     if (!initialDataLoaded) {
         elements.nextPrayer.textContent = 'Lade...';
         if (iconElement) iconElement.style.display = 'none';
         return;
     }
-
     let displayText = 'Warte...';
     let textColor = 'grey';
     let showIcon = false;
@@ -206,15 +169,10 @@ export function updateNextPrayerTimerDisplay(
     if (prayerToHighlight) {
         if (prayerToHighlight.isAdhanTime === true) {
             displayText = `Adhan`;
-            textColor = '#90EE90'; // Hellgrün
+            textColor = '#90EE90';
             showIcon = true;
             iconFill = textColor;
-        } else if (
-            prayerToHighlight.adhanEndTime &&
-            prayerToHighlight.iqamaEndTime &&
-            now >= prayerToHighlight.adhanEndTime &&
-            now < prayerToHighlight.iqamaEndTime
-        ) {
+        } else if (prayerToHighlight.adhanEndTime && prayerToHighlight.iqamaEndTime && now >= prayerToHighlight.adhanEndTime && now < prayerToHighlight.iqamaEndTime) {
             displayText = `${prayerToHighlight.displayName || prayerToHighlight.name}`;
             textColor = 'white';
             showIcon = true;
@@ -232,9 +190,7 @@ export function updateNextPrayerTimerDisplay(
                     if (hoursLeft > 0) timeLeftString += `${hoursLeft} Std `;
                     timeLeftString += `${minutesLeft} Min`;
                 }
-                const nextPrayerNameDisplay =
-                    (nextPrayerForText.displayName || nextPrayerForText.name).charAt(0).toUpperCase() +
-                    (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
+                const nextPrayerNameDisplay = (nextPrayerForText.displayName || nextPrayerForText.name).charAt(0).toUpperCase() + (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
                 displayText = `${nextPrayerNameDisplay} in ${timeLeftString}`;
                 textColor = 'white';
                 showIcon = true;
@@ -254,15 +210,12 @@ export function updateNextPrayerTimerDisplay(
                 if (hoursLeft > 0) timeLeftString += `${hoursLeft} Std `;
                 timeLeftString += `${minutesLeft} Min`;
             }
-            const nextPrayerNameDisplay =
-                (nextPrayerForText.displayName || nextPrayerForText.name).charAt(0).toUpperCase() +
-                (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
+            const nextPrayerNameDisplay = (nextPrayerForText.displayName || nextPrayerForText.name).charAt(0).toUpperCase() + (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
             displayText = `${nextPrayerNameDisplay} in ${timeLeftString}`;
             textColor = 'white';
             showIcon = true;
         }
     }
-
     elements.nextPrayer.textContent = displayText;
     elements.nextPrayer.style.color = textColor;
     if (iconElement) {
@@ -280,21 +233,11 @@ export function updateDateTimeDisplay() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const secondsValue = now.getSeconds().toString().padStart(2, '0');
 
-    if (elements.hoursAndMin)
-        elements.hoursAndMin.textContent = `${hours}:${minutes}`;
+    if (elements.hoursAndMin) elements.hoursAndMin.textContent = `${hours}:${minutes}`;
     if (elements.seconds) elements.seconds.textContent = `:${secondsValue}`;
-
     if (elements.currentDate) {
-        const options = {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        };
-        elements.currentDate.textContent = now.toLocaleDateString(
-            'de-DE',
-            options
-        );
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        elements.currentDate.textContent = now.toLocaleDateString('de-DE', options);
     }
 }
 
@@ -303,27 +246,50 @@ export function updateDateTimeDisplay() {
  * @param {object|null} hijriData - Die abgerufenen Hijri-Daten oder null.
  */
 export function updateIslamicDateUI(hijriData) {
-    if (hijriData && hijriData.month && hijriData.month.en) {
-        const islamicDay = hijriData.day;
-        const islamicMonth =
-            hijriMonthMap[hijriData.month.en] || hijriData.month.en;
-        const islamicYear = hijriData.year;
-        const islamicDateStr = `${islamicDay}. ${islamicMonth} ${islamicYear} H`;
-        setDisplayedIslamicDate(islamicDateStr);
-        if (elements.islamicDate)
-            elements.islamicDate.textContent = islamicDateStr;
-    } else {
-        if (elements.islamicDate)
-            elements.islamicDate.textContent =
-                'Islamisches Datum nicht verfügbar.';
+    const islamicDateElement = elements.islamicDate;
+
+    if (!hijriData || typeof hijriData.day === 'undefined') {
+        if (islamicDateElement) islamicDateElement.textContent = "Datum nicht verfügbar";
+        setDisplayedIslamicDateObject(null); // Wichtig: Globalen Zustand aktualisieren
+        return;
     }
+
+    const day = hijriData.day;
+    const year = hijriData.year;
+    let monthNameDe;
+
+    // Monatsnamen ermitteln basierend auf der Struktur von hijriData
+    if (hijriData.month_name && (hijriData.source === 'manual_js_anchored' || hijriData.source === 'manual_direct')) {
+        // Manuelle JS-Funktion liefert month_name direkt deutsch
+        monthNameDe = hijriData.month_name;
+    } else if (hijriData.month && hijriData.month.en) { // API-Quelle (Aladhan)
+        const monthEn = hijriData.month.en;
+        monthNameDe = hijriMonthMap[monthEn] || monthEn; // Übersetzen oder Fallback
+    } else if (hijriData.month_name) {
+        // Allgemeiner Fallback, falls month_name vorhanden ist (z.B. von älterer manueller Logik)
+        monthNameDe = hijriData.month_name;
+    } else {
+        monthNameDe = "Unbek. Monat";
+    }
+
+    const dateString = `${day}. ${monthNameDe} ${year} H.`;
+
+    // Der "(Wartet)" Zusatz wird in dieser vereinfachten clientseitigen Logik nicht mehr verwendet.
+    // if (hijriData.status === 'awaiting_confirmation') {
+    //     dateString += ' (Wartet)';
+    // }
+
+    if (islamicDateElement) {
+        islamicDateElement.textContent = dateString;
+    }
+    setDisplayedIslamicDateObject(hijriData); // Globalen Zustand mit dem vollen Objekt aktualisieren
 }
 
 /**
  * Setzt die Isha-Zeit manuell und aktualisiert die UI.
  * @param {string} timeStr - Die neue Isha-Zeit (HH:MM).
  */
-export function setIshaTimeUI(timeStr) {
+export function setIshaTimeUI(timeStr) { // Diese Funktion wird von deiner main.js nicht mehr exportiert, aber falls du sie brauchst
     const cleanTime = timeStr.substring(0, 5);
     const currentTimes = { ...prayerTimesData, Isha: cleanTime };
     setPrayerTimesData(currentTimes);
@@ -332,18 +298,14 @@ export function setIshaTimeUI(timeStr) {
     if (ishaMobile) ishaMobile.textContent = cleanTime;
     const ishaWide = document.getElementById('Isha_wide');
     if (ishaWide) ishaWide.textContent = cleanTime;
-    console.log('Isha manuell gesetzt auf:', cleanTime);
+    // console.log('Isha manuell gesetzt auf:', cleanTime);
 
     if (initialDataLoaded) {
         const now = getCurrentTime();
         const prayerToHighlight = findPrayerToHighlight(now);
         const chronologicallyNextPrayer = findNextPrayer(now);
         highlightPrayer(prayerToHighlight);
-        updateNextPrayerTimerDisplay(
-            prayerToHighlight,
-            chronologicallyNextPrayer,
-            now
-        );
+        updateNextPrayerTimerDisplay(prayerToHighlight, chronologicallyNextPrayer, now);
     }
 }
 
@@ -364,19 +326,14 @@ export function setJumaaTimeUI(timeStr) {
         const jumaaDesktopSide = document.getElementById(jumaaConfig.idTimeDesktopSide);
         if (jumaaDesktopSide) jumaaDesktopSide.textContent = cleanTime;
     }
-
-    console.log('Jumaa manuell gesetzt auf:', cleanTime);
+    // console.log('Jumaa manuell gesetzt auf:', cleanTime);
 
     if (initialDataLoaded) {
         const now = getCurrentTime();
         const prayerToHighlight = findPrayerToHighlight(now);
         const chronologicallyNextPrayer = findNextPrayer(now);
         highlightPrayer(prayerToHighlight);
-        updateNextPrayerTimerDisplay(
-            prayerToHighlight,
-            chronologicallyNextPrayer,
-            now
-        );
+        updateNextPrayerTimerDisplay(prayerToHighlight, chronologicallyNextPrayer, now);
     }
 }
 
@@ -389,10 +346,7 @@ export function updateUI() {
     const nextPrayerForText = findNextPrayer(now);
     const currentMinute = now.getMinutes();
 
-    if (
-        currentMinute !== lastHighlightUpdateMinute ||
-        lastHighlightUpdateMinute === -1
-    ) {
+    if (currentMinute !== lastHighlightUpdateMinute || lastHighlightUpdateMinute === -1) {
         highlightPrayer(prayerToHighlight);
         setLastHighlightMinute(currentMinute);
     }
