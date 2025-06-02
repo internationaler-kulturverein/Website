@@ -17,7 +17,7 @@
 
 <body class="custom-bg">
     <!-- ===== DEBUG TIME CONTROLS (Nur zum Testen!) ===== -->
- <!-- <div id="debug-controls" style="position: fixed; bottom: 10px; left: 10px; background-color: rgba(0,0,0,0.7); border: 1px solid #ccc; padding: 15px; border-radius: 5px; z-index: 1000; color: white; font-size: 0.9rem;">
+<!-- <div id="debug-controls" style="position: fixed; bottom: 10px; left: 10px; background-color: rgba(0,0,0,0.7); border: 1px solid #ccc; padding: 15px; border-radius: 5px; z-index: 1000; color: white; font-size: 0.9rem;">
         <h6 style="margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #555; padding-bottom: 5px;">
             Test Zeitsteuerung
             <button id="close-debug-btn" style="position: absolute; top: 5px; right: 7px; background: none; border: none; color: #aaa; font-size: 16px; cursor: pointer; padding: 0 5px; line-height: 1;">&times;</button>
@@ -63,13 +63,13 @@
     <div class="container pb-4">
 
         <div class="row mt-2 mb-2 justify-content-center align-items-center">
-            <!-- Shuruk Card (Nur Desktop - lg und größer) -->
+            <!-- Shuruk/Eid Card (Nur Desktop - lg und größer) -->
             <div class="col-lg-3 d-none d-lg-block">
-                <div class="card custom-bg-card text-white text-center"> <!-- ID für Shuruk ggf. auch hinzufügen, falls es hervorgehoben werden soll -->
+                <div class="card custom-bg-card text-white text-center" id="shurukDesktopCard"> <!-- ID für die Karte, falls benötigt -->
                     <div class="card-body">
                         <div class="d-flex flex-column align-items-center">
-                            <span class="prayer-title-wide">Shuruk</span>
-                            <span class="prayer-time" id="Sunrise_desktop_side">--:--</span>
+                            <span class="prayer-title-wide" id="shurukTitleDesktopSide">Shuruk</span> <!-- ID für den Titel Desktop -->
+                            <span class="prayer-time" id="Sunrise_desktop_side">--:--</span> <!-- ID für die Zeit Desktop -->
                         </div>
                     </div>
                 </div>
@@ -89,17 +89,16 @@
             </div>
 
             <!-- Jumaa Card (Nur Desktop - lg und größer) -->
-<div class="col-lg-3 d-none d-lg-block">
-    <div class="card custom-bg-card text-white text-center" id="jumaaCardDesktopSide">
-        <!-- HIER p-0 HINZUGEFÜGT, um das Bootstrap-Padding des card-body zu entfernen -->
-        <div class="card-body">
-            <div class="d-flex flex-column align-items-center"> <!-- Dieses div bekommt die Klasse 'custom-col' -->
-                <span class="prayer-title-wide">Jumaa</span>
-                <span class="prayer-time" id="Jumaa_desktop_side">--:--</span>
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="card custom-bg-card text-white text-center" id="jumaaCardDesktopSide">
+                    <div class="card-body">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="prayer-title-wide">Jumaa</span>
+                            <span class="prayer-time" id="Jumaa_desktop_side">--:--</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
         </div>
 
@@ -144,16 +143,16 @@
                 <div class="card custom-bg-card border-0 text-white mt-3">
                     <div class="card-body">
                         <div class="row align-items-center text-center">
-                            <div class="col-6" id="colJumaaMobile">
+                            <div class="col-6" id="colJumaaMobile"> <!-- ID für Jumaa Mobile Spalte -->
                                 <div class="d-flex flex-column gap-1">
                                     <span class="prayer-title">Jumaa</span>
-                                    <span class="prayer-time" id="Jumaa">--:--</span>
+                                    <span class="prayer-time" id="Jumaa">--:--</span> <!-- ID für Jumaa Zeit Mobile -->
                                 </div>
                             </div>
-                            <div class="col-6" id="colShurukMobile">
+                            <div class="col-6" id="colShurukMobile"> <!-- ID für Shuruk/Eid Mobile Spalte -->
                                 <div class="d-flex flex-column gap-1">
-                                    <span class="prayer-title">Shuruk</span>
-                                    <span class="prayer-time" id="Sunrise">--:--</span>
+                                    <span class="prayer-title" id="shurukTitleMobile">Shuruk</span> <!-- ID für den Titel Mobile -->
+                                    <span class="prayer-time" id="Sunrise">--:--</span> <!-- ID für die Zeit Mobile (Sunrise wird für Shuruk/Eid Zeit verwendet) -->
                                 </div>
                            </div>
                         </div>
@@ -167,31 +166,31 @@
                     <div class="card-body">
                         <div class="row justify-content-around">
                             <div class="col text-center px-1">
-                                <div class="d-flex flex-column gap-2">
+                                <div class="d-flex flex-column gap-2"> <!-- Dies ist das Ziel für Desktop-Highlight -->
                                     <span class="prayer-title-wide">Fajr</span>
                                     <span class="prayer-time" id="Fajr_wide">--:--</span>
                                 </div>
                             </div>
                             <div class="col text-center px-1">
-                                <div class="d-flex flex-column gap-2">
+                                <div class="d-flex flex-column gap-2"> <!-- Dies ist das Ziel für Desktop-Highlight -->
                                     <span class="prayer-title-wide">Dhuhr</span>
                                     <span class="prayer-time" id="Dhuhr_wide">--:--</span>
                                 </div>
                             </div>
                             <div class="col text-center px-1">
-                                <div class="d-flex flex-column gap-2">
+                                <div class="d-flex flex-column gap-2"> <!-- Dies ist das Ziel für Desktop-Highlight -->
                                     <span class="prayer-title-wide">Asr</span>
                                     <span class="prayer-time" id="Asr_wide">--:--</span>
                                 </div>
                             </div>
                             <div class="col text-center px-1">
-                                <div class="d-flex flex-column gap-2">
+                                <div class="d-flex flex-column gap-2"> <!-- Dies ist das Ziel für Desktop-Highlight -->
                                     <span class="prayer-title-wide">Maghrib</span>
                                     <span class="prayer-time" id="Maghrib_wide">--:--</span>
                                 </div>
                             </div>
                             <div class="col text-center px-1">
-                                <div class="d-flex flex-column gap-2">
+                                <div class="d-flex flex-column gap-2"> <!-- Dies ist das Ziel für Desktop-Highlight -->
                                     <span class="prayer-title-wide">Ishaa</span>
                                     <span class="prayer-time" id="Isha_wide">--:--</span>
                                 </div>
@@ -199,8 +198,9 @@
                         </div>
                     </div>
                 </div>
-                 <!-- ALTE DESKTOP FORMAT Jumaa / Shuruk Card (wird per CSS auf lg+ ausgeblendet) -->
-                 <div class="card border-0 custom-bg-card text-white mt-3" id="original-desktop-jumaa-shuruk-card-bottom">
+                 <!-- ALTE DESKTOP FORMAT Jumaa / Shuruk Card (wird per CSS auf lg+ ausgeblendet, wenn die neuen oben sind) -->
+                 <!-- Diese Karte wird nicht mehr benötigt, da Jumaa und Shuruk/Eid jetzt oben neben der Uhrzeit sind -->
+                 <!-- <div class="card border-0 custom-bg-card text-white mt-3" id="original-desktop-jumaa-shuruk-card-bottom">
                     <div class="card-body">
                          <div class="row justify-content-around">
                              <div class="col-md-4 text-center px-1">
@@ -217,7 +217,7 @@
                              </div>
                          </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div> <!-- Ende Container -->
