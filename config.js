@@ -59,10 +59,40 @@ export const sunriseConfig = {
     name: 'Sunrise',
     displayName: 'Shuruk',
     idMobileCol: 'colShurukMobile',
-    idTimeMobile: 'Sunrise',
-    idTimeDesktopSide: 'Sunrise_desktop_side',
-    adhanDurationMinutes: 0,
-    iqamaDurationMinutes: 0,
+    idTimeMobile: 'Sunrise', // Zeit-Element-ID für Mobile
+    idTitleMobile: 'shurukTitleMobile', // NEU: ID für den Titel-Span Mobile
+    idTimeDesktopSide: 'Sunrise_desktop_side', // Zeit-Element-ID für Desktop
+    idTitleDesktopSide: 'shurukTitleDesktopSide', // NEU: ID für den Titel-Span Desktop
+    // Desktop-Highlighting: Shuruk hat keine eigene Karte wie Jumaa,
+    // sondern ist Teil einer Sammelkarte oder einer einfachen Anzeige.
+    // Das Highlighten von Shuruk/Eid auf dem Desktop muss ggf. anders behandelt werden
+    // als die Hauptgebete oder Jumaa, falls es eine eigene "Karte" bekommen soll.
+    // Aktuell wird es wie ein normales Gebet behandelt, wenn es hervorgehoben wird.
+    // Wenn es eine spezielle Desktop-Karte für Shuruk/Eid gibt, die hervorgehoben werden soll,
+    // müsste hier eine idDesktopCard o.ä. definiert werden.
+    // Für den Moment gehen wir davon aus, dass die Hervorhebung über die Zeit-Elemente gesteuert wird.
+    adhanDurationMinutes: 0, // Standard für Shuruk
+    iqamaDurationMinutes: 0, // Standard für Shuruk
+};
+
+export const eidPrayerConfig = {
+    showEidPrayer: true, // Auf true setzen, um Eid-Gebet anzuzeigen
+    name: 'Eid', // Interner Name
+    displayName: 'Eid Gebet',
+    dayOfEid: '2025-06-07', // Beispiel: YYYY-MM-DD Format. Passe dies an.
+    timeOfEid: '06:30', // Beispiel: HH:MM Format
+    adhanDurationMinutes: 2,
+    iqamaDurationMinutes: 10,
+    // UI-Element-IDs für Titel (werden von sunriseConfig "geliehen" bzw. sind neu)
+    idTitleMobile: sunriseConfig.idTitleMobile,
+    idTitleDesktopSide: sunriseConfig.idTitleDesktopSide,
+    // UI-Element-IDs für Zeit (werden von sunriseConfig "geliehen")
+    idTimeMobile: sunriseConfig.idTimeMobile,
+    idTimeDesktopSide: sunriseConfig.idTimeDesktopSide,
+    // UI-Element-ID für die Spalte/den Container (wird von sunriseConfig "geliehen")
+    idMobileCol: sunriseConfig.idMobileCol,
+    // Wenn Eid auf dem Desktop eine eigene Karte wie Jumaa hätte, bräuchte es:
+    // idDesktopCard: 'eidCardDesktop', (hypothetisch)
 };
 
 export const highlightClassNameMobile = 'custom-row-bg';
@@ -100,7 +130,7 @@ export const hijriMonthOrder = [
 
 // --- MODUS-EINSTELLUNG FÜR HIJRI-DATUM ---
 // 'api': Verwendet die Aladhan API für das Hijri-Datum.
-// 'manual': Verwendet die untenstehenden MANUAL_SETTINGS und zählt clientseitig weiter.
+// 'manual': Verwendet die untenstehenden MANUAL_SETTINGS 
 export const HIJRI_MODE = 'manual'; // ÄNDERE DIES ZU 'api' oder 'manual'
 
 // --- EINSTELLUNGEN FÜR MANUAL_MODE ---
