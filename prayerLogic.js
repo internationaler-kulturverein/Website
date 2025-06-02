@@ -1,97 +1,226 @@
 // prayerLogic.js
-// Enthält die Logik zur Bestimmung des nächsten Gebets und des hervorzuhebenden Gebets.
-
-import { prayerTimesConfig, jumaaConfig } from './config.js';
-// Stelle sicher, dass getIqamaEndTime hier importiert wird:
-import { parsePrayerTime, getAdhanEndTime, getIqamaEndTime } from './timeUtils.js';
+import {
+    prayerTimesConfig,
+    jumaaConfig,
+    sunriseConfig,
+    eidPrayerConfig,
+} from './config.js';
+import {
+    parsePrayerTime,
+    getAdhanEndTime,
+    getIqamaEndTime,
+} from './timeUtils.js';
 import { initialDataLoaded, prayerTimesData } from './main.js';
+
+/**
+ * Erstellt eine Liste der für den aktuellen Tag und die aktuelle Zeit relevanten Gebetskonfigurationen.
+ * Ersetzt Dhuhr durch Jumaa an Freitagen und Shuruk durch Eid, wenn konfiguriert.
+ * @param {Date} now - Das aktuelle Datum und die aktuelle Uhrzeit (wird für Jumaa-Prüfung benötigt).
+ * @param {object} currentPrayerTimes - Die aktuell geladenen Gebetszeiten.
+ * @returns {Array<object>} Eine Liste von effektiven Gebetskonfigurationsobjekten.
+ */
+export function getEffectivePrayerConfigs(now, currentPrayerTimes) {
+    if (!currentPrayerTimes) {
+        console.warn("Logic: getEffectivePrayerConfigs - currentPrayerTimes nicht verfügbar");
+        return [];
+    }
+    console.log("Logic: getEffectivePrayerConfigs aufgerufen.");
+    console.log("Logic: eidPrayerConfig.showEidPrayer:", eidPrayerConfig.showEidPrayer);
+
+    const effectiveConfigs = [];
+    const isFriday = now.getDay() === 5;
+    // todayDateString wird hier nicht mehr für die Eid-Entscheidung benötigt,
+    // aber die Logik für Jumaa bleibt.
+
+    // Hauptgebete
+    prayerTimesConfig.forEach((config) => {
+        if (
+            isFriday &&
+            config.name === 'Dhuhr' &&
+            currentPrayerTimes.Jumaa
+        ) {
+            return;
+        }
+        if (currentPrayerTimes[config.name]) { // Nur hinzufügen, wenn Zeit vorhanden
+            effectiveConfigs.push({
+                ...config,
+                time: currentPrayerTimes[config.name],
+            });
+        } else {
+            console.warn(`Logic: Fehlende Zeit für ${config.name} in currentPrayerTimes`);
+        }
+    });
+
+    // Jumaa
+    if (isFriday && currentPrayerTimes.Jumaa) {
+        effectiveConfigs.push({
+            ...jumaaConfig,
+            time: currentPrayerTimes.Jumaa,
+        });
+    }
+
+    // Eid oder Shuruk
+    if (eidPrayerConfig.showEidPrayer) {
+        console.log("Logic: showEidPrayer ist true. Füge Eid-Konfiguration hinzu.");
+        effectiveConfigs.push({
+            ...sunriseConfig, // Basis für UI-Elemente
+            name: eidPrayerConfig.name,
+            displayName: eidPrayerConfig.displayName,
+            time: eidPrayerConfig.timeOfEid, // Direkte Zeit von eidPrayerConfig
+            adhanDurationMinutes: eidPrayerConfig.adhanDurationMinutes,
+            iqamaDurationMinutes: eidPrayerConfig.iqamaDurationMinutes,
+            isEidActive: true, // Flag, dass es sich um Eid handelt
+            // Wichtig: Das Datum für parsePrayerTime in findPrayerToHighlight/findNextPrayer
+            // muss das *tatsächliche* Datum sein, an dem Eid stattfindet (aus eidPrayerConfig.dayOfEid),
+            // nicht unbedingt 'now', wenn Eid im Voraus angezeigt wird.
+            // Wir fügen hier das Zieldatum für Eid hinzu, damit die Logikfunktionen es verwenden können.
+            targetDateString: eidPrayerConfig.dayOfEid,
+        });
+    } else {
+        console.log("Logic: showEidPrayer ist false. Füge Shuruk-Konfiguration hinzu (falls Zeit vorhanden).");
+        if (currentPrayerTimes.Sunrise) {
+            effectiveConfigs.push({
+                ...sunriseConfig,
+                time: currentPrayerTimes.Sunrise,
+            });
+        } else {
+            // Fallback, falls Sunrise-Zeit fehlt, aber Config existiert
+            console.warn("Logic: Keine Sunrise-Zeit in currentPrayerTimes, füge Shuruk mit '--:--' hinzu.");
+            effectiveConfigs.push({ ...sunriseConfig, time: '--:--' });
+        }
+    }
+    // Filtern ist hier nicht mehr nötig, da wir sicherstellen, dass Zeiten vorhanden sind oder Fallbacks existieren.
+    return effectiveConfigs;
+}
 
 /**
  * Findet das Gebet, das aktuell hervorgehoben werden soll (inkl. Adhan- und Iqama-Zeit).
  * @param {Date} now - Die aktuelle Zeit.
- * @returns {object|null} Das Konfigurationsobjekt des hervorzuhebenden Gebets
- *                        mit zusätzlichen Flags `isAdhanTime` und `isIqamaPeriod`, oder null.
+ * @returns {object|null} Das Konfigurationsobjekt des hervorzuhebenden Gebets.
  */
 export function findPrayerToHighlight(now) {
-    if (!initialDataLoaded) return null;
+    if (!initialDataLoaded || !prayerTimesData) return null;
 
     const prayersWithTimes = [];
-    const isFriday = now.getDay() === 5;
+    const allEffectiveConfigs = getEffectivePrayerConfigs(now, prayerTimesData);
+    console.log("Logic: findPrayerToHighlight - allEffectiveConfigs:", JSON.parse(JSON.stringify(allEffectiveConfigs)));
 
-    // Helferfunktion, um Gebetsdaten aufzubereiten
-    const processPrayer = (config, prayerTime, contextDate) => {
-        const prayerDate = parsePrayerTime(prayerTime, contextDate);
+
+    const processPrayer = (config, prayerTimeStr, contextDate) => {
+        let dateForParsing = contextDate;
+        // Wenn es Eid ist und ein targetDateString hat, parse die Zeit für dieses spezifische Datum
+        if (config.isEidActive && config.targetDateString) {
+            const parts = config.targetDateString.split('-');
+            if (parts.length === 3) {
+                dateForParsing = new Date(
+                    parseInt(parts[0]),
+                    parseInt(parts[1]) - 1,
+                    parseInt(parts[2])
+                );
+                if (isNaN(dateForParsing.getTime())) {
+                    console.warn("Logic: Ungültiges targetDateString für Eid, verwende contextDate:", config.targetDateString);
+                    dateForParsing = contextDate; // Fallback
+                } else {
+                     console.log("Logic: Parse Eid-Zeit für Zieldatum:", dateForParsing.toDateString(), "mit Zeit:", prayerTimeStr);
+                }
+            } else {
+                 console.warn("Logic: Ungültiges Format für targetDateString, verwende contextDate:", config.targetDateString);
+                 dateForParsing = contextDate; // Fallback
+            }
+        }
+
+
+        const prayerDate = parsePrayerTime(prayerTimeStr, dateForParsing);
         if (prayerDate) {
             const adhanEndTime = getAdhanEndTime(config, prayerDate);
-            // Wichtig: Das "endDate" für die Hervorhebung ist jetzt das Iqama-Ende
             const iqamaEndTimeValue = getIqamaEndTime(config, adhanEndTime);
             prayersWithTimes.push({
                 ...config,
-                date: prayerDate, // Startzeit des Gebets
-                adhanEndTime: adhanEndTime, // Ende der Adhan-Phase
-                iqamaEndTime: iqamaEndTimeValue, // Ende der Iqama-Phase (und somit der Hervorhebung)
+                date: prayerDate,
+                adhanEndTime: adhanEndTime,
+                iqamaEndTime: iqamaEndTimeValue,
             });
+        } else {
+            console.warn(`Logic: Konnte Gebetszeit nicht parsen für ${config.name} mit Zeit ${prayerTimeStr} und Datum ${dateForParsing.toDateString()}`);
         }
     };
 
-    // Füge Hauptgebete hinzu
-    prayerTimesConfig.forEach((config) => {
-        if (isFriday && config.name === 'Dhuhr' && prayerTimesData['Jumaa']) return;
-        const timeString = prayerTimesData[config.name];
-        processPrayer(config, timeString, now);
+    allEffectiveConfigs.forEach((effConfig) => {
+        // effConfig.time sollte hier immer definiert sein durch getEffectivePrayerConfigs
+        if (effConfig.time) {
+            processPrayer(effConfig, effConfig.time, now);
+        } else {
+            console.warn("Logic: findPrayerToHighlight - effConfig ohne .time Feld:", effConfig.name);
+        }
     });
 
-    // Füge Jumaa hinzu
-    if (isFriday && prayerTimesData['Jumaa']) {
-        const jumaaTimeString = prayerTimesData['Jumaa'];
-        processPrayer(jumaaConfig, jumaaTimeString, now);
-    }
-
-    // Sortiere Gebete chronologisch nach Startzeit
     prayersWithTimes.sort((a, b) => a.date - b.date);
+    console.log("Logic: findPrayerToHighlight - prayersWithTimes (sortiert):", JSON.parse(JSON.stringify(prayersWithTimes.map(p => ({name: p.name, date: p.date?.toISOString(), time: p.time})))));
+
 
     let prayerToHighlight = null;
+
     for (const prayer of prayersWithTimes) {
-        // Ein Gebet wird hervorgehoben, wenn 'now' VOR dem Ende seiner Iqama-Zeit liegt.
-        if (now < prayer.iqamaEndTime) {
+        // Ein Gebet ist "aktiv" für Hervorhebung, wenn 'now' zwischen seinem Start (prayer.date)
+        // und dem Ende seiner Iqama-Zeit liegt.
+        // Wichtig: Für Eid, das im Voraus angezeigt wird, ist prayer.date das Datum von eidPrayerConfig.dayOfEid.
+        // 'now' muss also an diesem Tag sein, damit es aktiv wird.
+        if (now >= prayer.date && now < prayer.iqamaEndTime) {
             prayerToHighlight = {
                 ...prayer,
-                // Flag für Blinken: Ist 'now' in der Adhan-Phase?
                 isAdhanTime: now >= prayer.date && now < prayer.adhanEndTime,
-                // Flag, um zu wissen, ob wir uns generell in der aktiven Phase befinden (Adhan ODER Iqama)
-                // Dieses Flag ist implizit, da prayerToHighlight nur gesetzt wird, wenn now < prayer.iqamaEndTime
-                // und now >= prayer.date (implizit durch die Sortierung und den Loop)
             };
+            console.log("Logic: Aktives Gebet zum Hervorheben gefunden:", prayerToHighlight.name, "Adhan:", prayerToHighlight.isAdhanTime);
+            return prayerToHighlight;
+        }
+    }
+
+    // Wenn kein Gebet aktiv ist, finde das nächste anstehende Gebet
+    let nextUpcomingPrayer = null;
+    for (const prayer of prayersWithTimes) {
+        if (prayer.date > now) {
+            nextUpcomingPrayer = prayer;
             break;
         }
     }
 
-    // Wenn kein Gebet für heute gefunden wurde (z.B. nach Isha + Iqama),
-    // hebe Fajr von morgen hervor.
-    if (!prayerToHighlight && prayersWithTimes.length > 0) {
-        const fajrConfig = prayerTimesConfig.find((p) => p.name === 'Fajr');
-        if (fajrConfig) {
-            const timeString = prayerTimesData[fajrConfig.name];
+    if (nextUpcomingPrayer) {
+        prayerToHighlight = {
+            ...nextUpcomingPrayer,
+            isAdhanTime: false,
+        };
+        console.log("Logic: Nächstes anstehendes Gebet (nicht aktiv):", prayerToHighlight.name);
+    } else if (prayersWithTimes.length > 0) {
+        // Alle Gebete für heute/Eid-Tag sind vorbei. Nimm das erste Gebet des nächsten Zyklus.
+        console.log("Logic: Alle Gebete für heute/Eid-Tag vorbei. Suche Fajr von morgen.");
+        const fajrConfig = prayerTimesConfig.find(p => p.name === 'Fajr');
+        if (fajrConfig && prayerTimesData[fajrConfig.name]) {
             const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0,0,0,0); // Sicherstellen, dass es der Anfang von morgen ist
+            tomorrow.setDate(now.getDate() + 1);
+            const fajrTimeTomorrow = prayerTimesData[fajrConfig.name];
+            const fajrDateTomorrow = parsePrayerTime(fajrTimeTomorrow, tomorrow);
 
-            const fajrTomorrowDate = parsePrayerTime(timeString, tomorrow);
-            if (fajrTomorrowDate) {
-                const fajrAdhanEnd = getAdhanEndTime(fajrConfig, fajrTomorrowDate);
-                const fajrIqamaEnd = getIqamaEndTime(fajrConfig, fajrAdhanEnd);
+            if (fajrDateTomorrow) {
+                const adhanEndTomorrow = getAdhanEndTime(fajrConfig, fajrDateTomorrow);
+                const iqamaEndTomorrow = getIqamaEndTime(fajrConfig, adhanEndTomorrow);
                 prayerToHighlight = {
                     ...fajrConfig,
-                    date: fajrTomorrowDate,
-                    adhanEndTime: fajrAdhanEnd,
-                    iqamaEndTime: fajrIqamaEnd,
-                    isAdhanTime: false, // Für Fajr morgen ist es noch nicht Adhan-Zeit
+                    date: fajrDateTomorrow,
+                    adhanEndTime: adhanEndTomorrow,
+                    iqamaEndTime: iqamaEndTomorrow,
+                    isAdhanTime: false,
+                    time: fajrTimeTomorrow,
                 };
+                console.log("Logic: Fallback auf Fajr von morgen:", prayerToHighlight.name);
             }
         }
     }
+    if (!prayerToHighlight) {
+        console.warn("Logic: Konnte kein Gebet zum Hervorheben finden.");
+    }
     return prayerToHighlight;
 }
+
 
 /**
  * Findet das Gebet, dessen Name als "nächstes Gebet" angezeigt werden soll.
@@ -100,48 +229,59 @@ export function findPrayerToHighlight(now) {
  * @returns {object|null} Das Konfigurationsobjekt des nächsten Gebets oder null.
  */
 export function findNextPrayer(now) {
-    if (!initialDataLoaded) return null;
+    if (!initialDataLoaded || !prayerTimesData) return null;
 
-    let prayersToCheck = [];
-    const isFriday = now.getDay() === 5;
+    const prayersToCheck = [];
+    const allEffectiveConfigs = getEffectivePrayerConfigs(now, prayerTimesData);
+    console.log("Logic: findNextPrayer - allEffectiveConfigs:", JSON.parse(JSON.stringify(allEffectiveConfigs)));
 
-    // Helferfunktion, um Gebetsdaten aufzubereiten (ähnlich wie oben, aber mit Iqama-Ende für die Logik)
-    const processPrayerForNext = (config, prayerTime, contextDate) => {
-        const prayerDate = parsePrayerTime(prayerTime, contextDate);
+
+    const processPrayerForNext = (config, prayerTimeStr, contextDate) => {
+        let dateForParsing = contextDate;
+        if (config.isEidActive && config.targetDateString) {
+            const parts = config.targetDateString.split('-');
+            if (parts.length === 3) {
+                dateForParsing = new Date(
+                    parseInt(parts[0]),
+                    parseInt(parts[1]) - 1,
+                    parseInt(parts[2])
+                );
+                 if (isNaN(dateForParsing.getTime())) dateForParsing = contextDate;
+            } else {
+                dateForParsing = contextDate;
+            }
+        }
+
+        const prayerDate = parsePrayerTime(prayerTimeStr, dateForParsing);
         if (prayerDate) {
             const adhanEndTime = getAdhanEndTime(config, prayerDate);
             const iqamaEndTimeValue = getIqamaEndTime(config, adhanEndTime);
             prayersToCheck.push({
                 ...config,
                 date: prayerDate,
-                adhanEndTime: adhanEndTime, // Nicht unbedingt für Logik hier gebraucht, aber für Konsistenz
-                iqamaEndTime: iqamaEndTimeValue, // Wichtig für die "aktiv" Prüfung
+                adhanEndTime: adhanEndTime,
+                iqamaEndTime: iqamaEndTimeValue,
             });
         }
     };
 
-    prayerTimesConfig.forEach((prayer) => {
-        if (isFriday && prayer.name === 'Dhuhr' && prayerTimesData['Jumaa']) return;
-        const timeString = prayerTimesData[prayer.name];
-        processPrayerForNext(prayer, timeString, now);
+    allEffectiveConfigs.forEach((effConfig) => {
+        if (effConfig.time) {
+            processPrayerForNext(effConfig, effConfig.time, now);
+        }
     });
 
-    if (isFriday && prayerTimesData['Jumaa']) {
-        const jumaaTimeString = prayerTimesData['Jumaa'];
-        processPrayerForNext(jumaaConfig, jumaaTimeString, now);
-    }
-
     prayersToCheck.sort((a, b) => a.date - b.date);
+    console.log("Logic: findNextPrayer - prayersToCheck (sortiert):", JSON.parse(JSON.stringify(prayersToCheck.map(p => ({name: p.name, date: p.date?.toISOString(), time: p.time})))));
 
-    // 1. Prüfen, ob ein Gebet gerade in Adhan- oder Iqama-Phase ist
+
     for (const prayer of prayersToCheck) {
-        // Wenn 'now' zwischen Gebetsstart und Iqama-Ende liegt, ist DIESES Gebet das "nächste" für die Anzeige
         if (now >= prayer.date && now < prayer.iqamaEndTime) {
-            return { ...prayer }; // Gibt die Konfiguration des aktuellen Gebets zurück
+            console.log("Logic: Aktives Gebet für 'Nächstes Gebet'-Text gefunden:", prayer.name);
+            return { ...prayer };
         }
     }
 
-    // 2. Wenn kein Gebet aktiv ist, finde das chronologisch nächste Gebet (dessen Startzeit in der Zukunft liegt)
     let chronologicallyNextPrayer = null;
     for (const prayer of prayersToCheck) {
         if (prayer.date && prayer.date > now) {
@@ -150,21 +290,28 @@ export function findNextPrayer(now) {
         }
     }
 
-    // 3. Wenn kein nächstes Gebet für heute gefunden wurde, nimm Fajr von morgen.
-    if (!chronologicallyNextPrayer && prayersToCheck.length > 0) {
-        const fajrConfig = prayerTimesConfig.find((p) => p.name === 'Fajr');
-        if (fajrConfig) {
-            const timeString = prayerTimesData[fajrConfig.name];
+    if (chronologicallyNextPrayer) {
+        console.log("Logic: Chronologisch nächstes Gebet für Text:", chronologicallyNextPrayer.name);
+    } else if (prayersToCheck.length > 0) {
+        console.log("Logic: Kein nächstes Gebet für heute/Eid-Tag, nehme Fajr von morgen für Text.");
+        const fajrConfig = prayerTimesConfig.find(p => p.name === 'Fajr');
+        if (fajrConfig && prayerTimesData[fajrConfig.name]) {
             const tomorrow = new Date(now);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0,0,0,0);
-            const fajrTomorrowDate = parsePrayerTime(timeString, tomorrow);
-            if (fajrTomorrowDate) {
-                // Für "Nächstes Gebet" brauchen wir hier nicht die vollen Endzeiten, nur das Datum
-                chronologicallyNextPrayer = { ...fajrConfig, date: fajrTomorrowDate };
+            const fajrTimeTomorrow = prayerTimesData[fajrConfig.name];
+            const fajrDateTomorrow = parsePrayerTime(fajrTimeTomorrow, tomorrow);
+            if (fajrDateTomorrow) {
+                chronologicallyNextPrayer = {
+                    ...fajrConfig,
+                    date: fajrDateTomorrow,
+                    time: fajrTimeTomorrow,
+                };
+                console.log("Logic: Fallback auf Fajr von morgen für Text:", chronologicallyNextPrayer.name);
             }
         }
     }
-
+     if (!chronologicallyNextPrayer) {
+        console.warn("Logic: Konnte kein nächstes Gebet für Text finden.");
+    }
     return chronologicallyNextPrayer;
 }
