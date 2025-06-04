@@ -79,7 +79,7 @@ export const eidPrayerConfig = {
     showEidPrayer: true, // Auf true setzen, um Eid-Gebet anzuzeigen
     name: 'Eid', // Interner Name
     displayName: 'Eid Gebet',
-    dayOfEid: '2025-06-07', // Beispiel: YYYY-MM-DD Format. Passe dies an.
+    dayOfEid: '2025-06-06', // Beispiel: YYYY-MM-DD Format. Passe dies an.
     timeOfEid: '06:30', // Beispiel: HH:MM Format
     adhanDurationMinutes: 2,
     iqamaDurationMinutes: 10,
@@ -131,7 +131,7 @@ export const hijriMonthOrder = [
 // --- MODUS-EINSTELLUNG FÜR HIJRI-DATUM ---
 // 'api': Verwendet die Aladhan API für das Hijri-Datum.
 // 'manual': Verwendet die untenstehenden MANUAL_SETTINGS 
-export const HIJRI_MODE = 'manual'; // ÄNDERE DIES ZU 'api' oder 'manual'
+export const HIJRI_MODE = 'api'; // ÄNDERE DIES ZU 'api' oder 'manual'
 
 // --- EINSTELLUNGEN FÜR MANUAL_MODE ---
 // Diese Werte werden verwendet, wenn HIJRI_MODE = 'manual' ist.
