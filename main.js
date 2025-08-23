@@ -198,8 +198,9 @@ async function fetchExpectedHijriData() {
     }
 }
 
-function checkAndUpdateIslamicDate() {
+export function checkAndUpdateIslamicDate() {
     if (!initialDataLoaded || isFetchingIslamicDate) return;
+    console.log("Checking for Islamic date update..."); // Hinzugefügtes Logging
     isFetchingIslamicDate = true;
     fetchExpectedHijriData()
         .then(expectedHijriData => {
@@ -219,7 +220,10 @@ function checkAndUpdateIslamicDate() {
                     }
                 }
                 if (needsUiUpdate) {
+                    console.log("New Islamic date detected, updating UI.", expectedHijriData); // Hinzugefügtes Logging
                     updateIslamicDateUI(expectedHijriData);
+                } else {
+                    console.log("No Islamic date change detected."); // Hinzugefügtes Logging
                 }
             }
         })
@@ -308,7 +312,7 @@ function updateLoop() {
     updateDateTimeDisplay();
     if (initialDataLoaded) {
         updateUI();
-        checkAndUpdateIslamicDate();
+        // checkAndUpdateIslamicDate(); // REMOVED FROM HERE
         checkGregorianDateChange();
     }
 }
