@@ -24,7 +24,12 @@ import {
     setLastHighlightMinute,
     setPrayerTimesData,
     setDisplayedIslamicDateObject,
+    checkAndUpdateIslamicDate, // IMPORTED
 } from './main.js';
+
+// --- Module-level state for UI ---
+let lastHighlightedPrayerName = null;
+
 
 /**
  * Aktualisiert die Anzeige der Gebetszeiten in der UI.
@@ -404,5 +409,16 @@ export function updateUI() {
         highlightPrayer(prayerToHighlight);
         setLastHighlightMinute(currentMinute);
     }
+
+    // --- NEUE LOGIK ZUM AUSLÖSEN DER DATUMSPRÜFUNG ---
+    const currentHighlightName = prayerToHighlight ? prayerToHighlight.name : null;
+    // Prüfe, ob Maghrib *gerade eben* zum aktuellen Gebet wurde
+    if (currentHighlightName === 'Maghrib' && lastHighlightedPrayerName !== 'Maghrib') {
+        console.log("UI: Maghrib time has begun. Triggering Islamic date check.");
+        checkAndUpdateIslamicDate();
+    }
+    lastHighlightedPrayerName = currentHighlightName; // Zustand für den nächsten Durchlauf merken
+    // --- ENDE NEUE LOGIK ---
+
     updateNextPrayerTimerDisplay(prayerToHighlight, nextPrayerForText, now);
 }
