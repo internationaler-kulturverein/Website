@@ -1,0 +1,9 @@
+{
+  "name": "Masjid Al Hikma - Gebetszeiten",
+  "short_name": "Gebetszeiten",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f3156",
+  "theme_color": "#0f3156",
+  "description": "Eine Web-App zur Anzeige der Gebetszeiten für die Masjid Al Hikma in Regensburg."
+}
