@@ -67,14 +67,19 @@ body.custom-bg::before {
 
 /* ===== TYPOGRAFIE (Basis Mobile First) ===== */
 #current-time {
-  font-size: 40px;
+  /* font-size: 40px; */ /* Ersetzt durch clamp für Responsivität */
+  font-size: clamp(2.2rem, 10vw, 2.5rem); /* Passt sich an schmale Bildschirme an */
   margin-bottom: 0.5rem;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  /* NEU: Flexbox für perfekte Zentrierung */
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
 }
 #current-time #seconds {
   font-size: 1em;
-  vertical-align: baseline;
-  margin-left: -8px;
+  /* vertical-align und margin-left sind nicht mehr nötig */
 }
 
 .prayer-title { /* Gilt für mobile Titel, inkl. #nextPrayer */
