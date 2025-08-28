@@ -29,6 +29,8 @@ import {
 
 // --- Module-level state for UI ---
 let lastHighlightedPrayerName = null;
+let prayerToHighlightState = null;
+let nextPrayerForTextState = null;
 
 
 /**
@@ -323,7 +325,7 @@ export function updateNextPrayerTimerDisplay(prayerToHighlight, nextPrayerForTex
     }
 }
 
-export function updateDateTimeDisplay() {
+export function updateTimeDisplay() {
     const now = getCurrentTime();
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -331,6 +333,10 @@ export function updateDateTimeDisplay() {
 
     if (elements.hoursAndMin) elements.hoursAndMin.textContent = `${hours}:${minutes}`;
     if (elements.seconds) elements.seconds.textContent = `:${secondsValue}`;
+}
+
+export function updateDateDisplay() {
+    const now = getCurrentTime();
     if (elements.currentDate) {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         elements.currentDate.textContent = now.toLocaleDateString('de-DE', options);
@@ -401,24 +407,28 @@ export function setJumaaTimeUI(timeStr) {
 
 export function updateUI() {
     const now = getCurrentTime();
-    const prayerToHighlight = findPrayerToHighlight(now);
-    const nextPrayerForText = findNextPrayer(now);
     const currentMinute = now.getMinutes();
 
+    // --- OPTIMIERUNG: Aufwändige Berechnungen nur einmal pro Minute ausführen ---
     if (currentMinute !== lastHighlightUpdateMinute || lastHighlightUpdateMinute === -1) {
-        highlightPrayer(prayerToHighlight);
+        // 1. Gebetslogik ausführen und Ergebnisse zwischenspeichern
+        prayerToHighlightState = findPrayerToHighlight(now);
+        nextPrayerForTextState = findNextPrayer(now);
+
+        // 2. Visuelles Highlight aktualisieren (nur einmal pro Minute nötig)
+        highlightPrayer(prayerToHighlightState);
         setLastHighlightMinute(currentMinute);
+
+        // 3. Islamisches Datum prüfen, wenn sich das Highlight auf Maghrib ändert
+        const currentHighlightName = prayerToHighlightState ? prayerToHighlightState.name : null;
+        if (currentHighlightName === 'Maghrib' && lastHighlightedPrayerName !== 'Maghrib') {
+            console.log("UI: Maghrib time has begun. Triggering Islamic date check.");
+            checkAndUpdateIslamicDate();
+        }
+        lastHighlightedPrayerName = currentHighlightName;
     }
 
-    // --- NEUE LOGIK ZUM AUSLÖSEN DER DATUMSPRÜFUNG ---
-    const currentHighlightName = prayerToHighlight ? prayerToHighlight.name : null;
-    // Prüfe, ob Maghrib *gerade eben* zum aktuellen Gebet wurde
-    if (currentHighlightName === 'Maghrib' && lastHighlightedPrayerName !== 'Maghrib') {
-        console.log("UI: Maghrib time has begun. Triggering Islamic date check.");
-        checkAndUpdateIslamicDate();
-    }
-    lastHighlightedPrayerName = currentHighlightName; // Zustand für den nächsten Durchlauf merken
-    // --- ENDE NEUE LOGIK ---
-
-    updateNextPrayerTimerDisplay(prayerToHighlight, nextPrayerForText, now);
+    // --- Sekundliche Aktualisierung des Countdowns ---
+    // Verwendet die zwischengespeicherten Ergebnisse für maximale Effizienz
+    updateNextPrayerTimerDisplay(prayerToHighlightState, nextPrayerForTextState, now);
 }
