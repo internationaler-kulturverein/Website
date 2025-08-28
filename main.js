@@ -25,7 +25,8 @@ import {
     updateIslamicDateUI,
     setJumaaTimeUI,
     updateUI,
-    updateDateTimeDisplay,
+    updateTimeDisplay,
+    updateDateDisplay,
 } from './ui.js';
 import { initializeDebugControls, loadDataAndRefreshUI as reloadDataFromDebug } from './debug.js';
 
@@ -241,6 +242,7 @@ function checkGregorianDateChange() {
     const currentDateStr = now.toDateString();
     if (lastCheckedGregorianDate && currentDateStr !== lastCheckedGregorianDate) {
         console.log('GREGORIANISCHER DATUMSWECHSEL ERKANNT - Lade neue Daten');
+        updateDateDisplay(); // Datum im UI aktualisieren
         if (typeof reloadDataFromDebug === 'function') {
             reloadDataFromDebug();
         } else {
@@ -309,7 +311,7 @@ export function loadInitialData() {
 }
 
 function updateLoop() {
-    updateDateTimeDisplay();
+    updateTimeDisplay();
     if (initialDataLoaded) {
         updateUI();
         // checkAndUpdateIslamicDate(); // REMOVED FROM HERE
@@ -322,7 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof initializeDebugControls === 'function') {
         initializeDebugControls();
     }
-    updateDateTimeDisplay();
+    updateTimeDisplay();
+    updateDateDisplay(); // Datum initial setzen
     loadInitialData();
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
