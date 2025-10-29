@@ -24,6 +24,7 @@ import {
     updateNextPrayerTimerDisplay,
     updateIslamicDateUI,
     setJumaaTimeUI,
+    setIshaTimeUI, //Isha zu fester Zeit setzen
     updateUI,
     updateTimeDisplay,
     updateDateDisplay,
@@ -286,6 +287,7 @@ export function loadInitialData() {
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
             setJumaaTimeUI('12:30'); // Hier wird Jumma Zeit gesetzt 
+            setIshaTimeUI('20:00'); //Hier wird Isha zu einer festen Zeit gesetzt
             return fetchExpectedHijriData();
         })
         .then(hijriData => {
@@ -330,4 +332,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
 });
+
 
