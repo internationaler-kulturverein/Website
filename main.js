@@ -287,7 +287,7 @@ export function loadInitialData() {
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
             setJumaaTimeUI('12:30'); // Hier wird Jumma Zeit gesetzt 
-            setIshaTimeUI('20:00'); //Hier wird Isha zu einer festen Zeit gesetzt
+            setIshaTimeUI('19:50'); //Hier wird Isha zu einer festen Zeit gesetzt
             return fetchExpectedHijriData();
         })
         .then(hijriData => {
@@ -332,5 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
 });
+
 
 
