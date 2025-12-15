@@ -19,14 +19,16 @@ export function fetchPrayerTimes(lat, lon, method) {
     if (method === 99) {
         // console.log('Verwende benutzerdefinierte Methode (99).'); // Optionales Logging
         if (typeof methodSettingsParam !== 'undefined' && methodSettingsParam !== null && methodSettingsParam.trim() !== '') {
-            apiUrl += `&methodSettings=${methodSettingsParam}`;
+            // FIX: encodeURIComponent verwenden, um Probleme mit Sonderzeichen (Kommas) in WebKit/Safari zu vermeiden
+            apiUrl += `&methodSettings=${encodeURIComponent(methodSettingsParam)}`;
         }
     }
     if (typeof tuneOffsets !== 'undefined' && tuneOffsets && tuneOffsets.trim() !== '') {
-         apiUrl += `&tune=${tuneOffsets}`;
+         // FIX: encodeURIComponent verwenden
+         apiUrl += `&tune=${encodeURIComponent(tuneOffsets)}`;
     }
 
-    // console.log('Finale API URL für Gebetszeiten:', apiUrl); // Optionales Logging
+    console.log('Generierte API URL:', apiUrl); // Logging aktiviert zur Kontrolle
 
     return fetch(apiUrl)
         .then((response) => {
