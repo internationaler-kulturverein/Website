@@ -24,7 +24,7 @@ import {
     updateNextPrayerTimerDisplay,
     updateIslamicDateUI,
     setJumaaTimeUI,
-    setIshaTimeUI, //Isha zu fester Zeit setzen
+    setIshaTimeUI, // Add this line
     updateUI,
     updateTimeDisplay,
     updateDateDisplay,
@@ -39,6 +39,8 @@ export let lastCheckedGregorianDate = null;
 export let midnightUpdateTimer = null;
 export let displayedIslamicDateObject = null;
 export let lastHighlightUpdateMinute = -1;
+let loadRetryCount = 0;
+const MAX_RETRIES = 3;
 let isFetchingIslamicDate = false;
 let currentHijriMode = HIJRI_MODE;
 
@@ -286,29 +288,43 @@ export function loadInitialData() {
             if (!times) throw new Error("Gebetszeiten konnten nicht abgerufen werden.");
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
-            setJumaaTimeUI('12:30'); // Hier wird Jumma Zeit gesetzt 
-            setIshaTimeUI('19:50'); //Hier wird Isha zu einer festen Zeit gesetzt
+            setJumaaTimeUI('13:30'); // Beispiel
+            setIshaTimeUI('22:00'); // Beispiel
             return fetchExpectedHijriData();
         })
         .then(hijriData => {
             if (hijriData) {
                 updateIslamicDateUI(hijriData);
             } else {
-                 console.warn("Islamisches Datum konnte initial nicht geladen werden.");
-                 if (elements.islamicDate) elements.islamicDate.textContent = "Fehler";
-                 setDisplayedIslamicDateObject(null);
+                console.warn("Islamisches Datum konnte initial nicht geladen werden.");
+                if (elements.islamicDate) elements.islamicDate.textContent = "Fehler";
+                setDisplayedIslamicDateObject(null);
             }
             setInitialDataLoaded(true);
             lastCheckedGregorianDate = getCurrentTime().toDateString();
+            loadRetryCount = 0; // Reset retry count on success
             updateUI();
         })
         .catch((error) => {
             console.error('Fehler beim initialen Laden:', error.message);
-            displayError(error.message || 'Fehler beim Laden der Daten.');
-            setInitialDataLoaded(false);
-            setPrayerTimesData({});
-            setDisplayedIslamicDateObject(null);
-            if (elements.islamicDate) elements.islamicDate.textContent = "Fehler";
+
+            if (loadRetryCount < MAX_RETRIES) {
+                loadRetryCount++;
+                const delay = 2000; // 2 seconds delay
+                console.log(`Verbindungsfehler. Versuch ${loadRetryCount} von ${MAX_RETRIES}. Neustart in ${delay}ms...`);
+                displayError(`Verbindungsfehler. Neuer Versuch in ${delay / 1000}s...`);
+
+                setTimeout(() => {
+                    loadInitialData();
+                }, delay);
+            } else {
+                console.error(`Max Retries (${MAX_RETRIES}) erreicht. Gebetszeiten konnten nicht geladen werden.`);
+                displayError(error.message || 'Fehler beim Laden der Daten. Bitte Seite neu laden.');
+                setInitialDataLoaded(false);
+                setPrayerTimesData({});
+                setDisplayedIslamicDateObject(null);
+                if (elements.islamicDate) elements.islamicDate.textContent = "Fehler";
+            }
         });
 }
 
@@ -332,6 +348,3 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
 });
-
-
-
