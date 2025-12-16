@@ -291,7 +291,7 @@ export function loadInitialData() {
             setJumaaTimeUI('12:30'); // Beispiel
             setIshaTimeUI('22:00'); // Beispiel
             return fetchExpectedHijriData();
-        }
+        })
         .then(hijriData => {
             if (hijriData) {
                 updateIslamicDateUI(hijriData);
@@ -348,4 +348,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
 });
+
 
