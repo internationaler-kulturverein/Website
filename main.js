@@ -288,10 +288,10 @@ export function loadInitialData() {
             if (!times) throw new Error("Gebetszeiten konnten nicht abgerufen werden.");
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
-            setJumaaTimeUI('13:30'); // Beispiel
+            setJumaaTimeUI('12:30'); // Beispiel
             setIshaTimeUI('22:00'); // Beispiel
             return fetchExpectedHijriData();
-        })
+        }
         .then(hijriData => {
             if (hijriData) {
                 updateIslamicDateUI(hijriData);
@@ -348,3 +348,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
 });
+
