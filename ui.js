@@ -10,11 +10,10 @@ import {
     highlightClassNameDesktop,
     hijriMonthMap,
 } from './config.js';
-import { getCurrentTime, parsePrayerTime } from './timeUtils.js'; // parsePrayerTime importieren
+import { getCurrentTime } from './timeUtils.js';
 import {
     findPrayerToHighlight,
     findNextPrayer,
-    // getEffectivePrayerConfigs, // Wird hier nicht direkt benötigt
 } from './prayerLogic.js';
 import {
     elements,
@@ -24,14 +23,22 @@ import {
     setLastHighlightMinute,
     setPrayerTimesData,
     setDisplayedIslamicDateObject,
-    checkAndUpdateIslamicDate, // IMPORTED
-} from './main.js';
+} from './state.js';
+// Callback für regelmäßige Datumsprüfung
+let onDateCheckCallback = null;
+
+/**
+ * Registriert den Callback für die regelmäßige Datumsprüfung.
+ * Dies löst die zirkuläre Abhängigkeit zwischen main.js und ui.js auf.
+ * @param {Function} callback - Die Funktion, die regelmäßig zur Datumsprüfung aufgerufen werden soll.
+ */
+export function registerDateCheckCallback(callback) {
+    onDateCheckCallback = callback;
+}
 
 // --- Module-level state for UI ---
-let lastHighlightedPrayerName = null;
 let prayerToHighlightState = null;
 let nextPrayerForTextState = null;
-
 
 /**
  * Aktualisiert die Anzeige der Gebetszeiten in der UI.
@@ -72,47 +79,47 @@ export function updatePrayerTimesUI(currentPrayerTimes) {
         }
     }
 
-    console.log('UI: updatePrayerTimesUI aufgerufen.');
-    console.log('UI: eidPrayerConfig.showEidPrayer:', eidPrayerConfig.showEidPrayer);
-
     const allDisplayConfigs = [...prayerTimesConfig, sunriseConfig];
 
     allDisplayConfigs.forEach((config) => {
         let timeValue;
 
         if (config.name === 'Sunrise') {
-            console.log('UI: Bearbeite Sunrise/Eid Block');
             const titleElMobile = document.getElementById(config.idTitleMobile);
             const titleElDesktop = document.getElementById(config.idTitleDesktopSide);
-            let titleContentHTML = "";
 
             if (eidPrayerConfig.showEidPrayer) {
-                console.log('UI: showEidPrayer ist true. Zeige Eid Gebet.');
                 const eidMainTitleText = eidPrayerConfig.displayName;
                 const eidDateDetailText = eidDateForFormatting ? `${eidWeekdayString} ${eidDayMonthString}` : "";
 
-                titleContentHTML = `<span class="eid-main-title">${eidMainTitleText}</span>`;
-                if (eidDateDetailText) {
-                    titleContentHTML += `<br><span class="eid-date-detail">${eidDateDetailText}</span>`;
+                function setEidTitle(element) {
+                    const mainSpan = document.createElement('span');
+                    mainSpan.className = 'eid-main-title';
+                    mainSpan.textContent = eidMainTitleText;
+                    if (eidDateDetailText) {
+                        const br = document.createElement('br');
+                        const dateSpan = document.createElement('span');
+                        dateSpan.className = 'eid-date-detail';
+                        dateSpan.textContent = eidDateDetailText;
+                        element.replaceChildren(mainSpan, br, dateSpan);
+                    } else {
+                        element.replaceChildren(mainSpan);
+                    }
                 }
 
                 timeValue = eidPrayerConfig.timeOfEid;
 
-                console.log(`UI: Eid HTML Titel: "${titleContentHTML}", Zeit: "${timeValue}"`);
-
-                if (titleElMobile) titleElMobile.innerHTML = titleContentHTML;
-                if (titleElDesktop) titleElDesktop.innerHTML = titleContentHTML;
+                if (titleElMobile) setEidTitle(titleElMobile);
+                if (titleElDesktop) setEidTitle(titleElDesktop);
 
             } else {
-                console.log('UI: showEidPrayer ist false. Zeige Shuruk.');
                 const shurukTitleText = sunriseConfig.displayName || sunriseConfig.name;
-                if (titleElMobile) titleElMobile.innerHTML = shurukTitleText;
-                if (titleElDesktop) titleElDesktop.innerHTML = shurukTitleText;
+                if (titleElMobile) titleElMobile.textContent = shurukTitleText;
+                if (titleElDesktop) titleElDesktop.textContent = shurukTitleText;
 
                 timeValue = timesToDisplay[sunriseConfig.name]
                     ? timesToDisplay[sunriseConfig.name].substring(0, 5)
                     : '--:--';
-                console.log(`UI: Shuruk Titel: "${shurukTitleText}", Shuruk Zeit: "${timeValue}"`);
             }
         } else {
             timeValue = timesToDisplay[config.name]
@@ -229,8 +236,8 @@ export function highlightPrayer(prayerToHighlight) {
         } else if (currentConfigForHighlight.name === 'Eid' || (currentConfigForHighlight.name === 'Sunrise' && currentConfigForHighlight.idTimeDesktopSide)) {
             const timeElementDesktop = document.getElementById(currentConfigForHighlight.idTimeDesktopSide);
             if (timeElementDesktop) {
-                 const shurukCard = timeElementDesktop.closest('#shurukDesktopCard');
-                 if (shurukCard) nextDesktopHighlightTarget = shurukCard.querySelector('.d-flex.flex-column');
+                const shurukCard = timeElementDesktop.closest('#shurukDesktopCard');
+                if (shurukCard) nextDesktopHighlightTarget = shurukCard.querySelector('.d-flex.flex-column');
             }
         } else if (currentConfigForHighlight.idTimeDesktop && !currentConfigForHighlight.idDesktopCard) {
             const nextTimeElementDesktop = document.getElementById(currentConfigForHighlight.idTimeDesktop);
@@ -242,6 +249,32 @@ export function highlightPrayer(prayerToHighlight) {
             if (useBlinking) nextDesktopHighlightTarget.classList.add('blink-bg');
         }
     }
+}
+
+/**
+ * Berechnet den Countdown-Text für ein bevorstehendes Gebet.
+ * @param {Date} targetTime - Der Zeitpunkt des nächsten Gebets.
+ * @param {Date} now - Die aktuelle Zeit.
+ * @returns {string|null} Der formatierte Countdown-String oder null wenn timeDiff <= 0.
+ */
+function calculateCountdown(targetTime, now) {
+    const timeDiff = targetTime.getTime() - now.getTime();
+    if (timeDiff <= 0) return null;
+
+    let timeLeftString = '';
+    const totalMinutesLeft = Math.floor(timeDiff / (1000 * 60));
+
+    if (totalMinutesLeft < 1) {
+        const secondsLeft = Math.ceil(timeDiff / 1000);
+        timeLeftString = `${secondsLeft} Sek`;
+    } else {
+        const hoursLeft = Math.floor(totalMinutesLeft / 60);
+        const minutesLeft = totalMinutesLeft % 60;
+        if (hoursLeft > 0) timeLeftString += `${hoursLeft} Std `;
+        timeLeftString += `${minutesLeft} Min`;
+    }
+
+    return timeLeftString;
 }
 
 export function updateNextPrayerTimerDisplay(prayerToHighlight, nextPrayerForText, now) {
@@ -273,44 +306,22 @@ export function updateNextPrayerTimerDisplay(prayerToHighlight, nextPrayerForTex
             }
         }
         else if (nextPrayerForText && nextPrayerForText.date) {
-            const timeDiff = nextPrayerForText.date.getTime() - now.getTime();
-            if (timeDiff > 0) {
-                let timeLeftString = '';
-                const totalMinutesLeft = Math.floor(timeDiff / (1000 * 60));
-
-                if (totalMinutesLeft < 1) {
-                    const secondsLeft = Math.ceil(timeDiff / 1000);
-                    timeLeftString = `${secondsLeft} Sek`;
-                } else {
-                    const hoursLeft = Math.floor(totalMinutesLeft / 60);
-                    const minutesLeft = totalMinutesLeft % 60;
-                    if (hoursLeft > 0) timeLeftString += `${hoursLeft} Std `;
-                    timeLeftString += `${minutesLeft} Min`;
-                }
+            const timeLeftString = calculateCountdown(nextPrayerForText.date, now);
+            if (timeLeftString) {
                 const nextPrayerNameDisplay = (nextPrayerForText.displayName || nextPrayerForText.name)
                     .charAt(0).toUpperCase() + (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
                 displayText = `${nextPrayerNameDisplay} in ${timeLeftString}`;
                 textColor = 'white';
                 showIcon = true;
             } else {
-                 displayText = "Zeiten aktualisieren...";
+                displayText = "Zeiten aktualisieren...";
             }
         }
     } else if (nextPrayerForText && nextPrayerForText.date) {
-        const timeDiff = nextPrayerForText.date.getTime() - now.getTime();
-        if (timeDiff > 0) {
-            let timeLeftString = '';
-            const totalMinutesLeft = Math.floor(timeDiff / (1000 * 60));
-            if (totalMinutesLeft < 1) {
-                const secondsLeft = Math.ceil(timeDiff / 1000);
-                timeLeftString = `${secondsLeft} Sek`;
-            } else {
-                const hoursLeft = Math.floor(totalMinutesLeft / 60);
-                const minutesLeft = totalMinutesLeft % 60;
-                if (hoursLeft > 0) timeLeftString += `${hoursLeft} Std `;
-                timeLeftString += `${minutesLeft} Min`;
-            }
-            const nextPrayerNameDisplay = (nextPrayerForText.displayName || nextPrayerForText.name).charAt(0).toUpperCase() + (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
+        const timeLeftString = calculateCountdown(nextPrayerForText.date, now);
+        if (timeLeftString) {
+            const nextPrayerNameDisplay = (nextPrayerForText.displayName || nextPrayerForText.name)
+                .charAt(0).toUpperCase() + (nextPrayerForText.displayName || nextPrayerForText.name).slice(1);
             displayText = `${nextPrayerNameDisplay} in ${timeLeftString}`;
             textColor = 'white';
             showIcon = true;
@@ -419,13 +430,10 @@ export function updateUI() {
         highlightPrayer(prayerToHighlightState);
         setLastHighlightMinute(currentMinute);
 
-        // 3. Islamisches Datum prüfen, wenn sich das Highlight auf Maghrib ändert
-        const currentHighlightName = prayerToHighlightState ? prayerToHighlightState.name : null;
-        if (currentHighlightName === 'Maghrib' && lastHighlightedPrayerName !== 'Maghrib') {
-            console.log("UI: Maghrib time has begun. Triggering Islamic date check.");
-            checkAndUpdateIslamicDate();
+        // 3. Islamisches Datum prüfen (jede Minute, nicht nur bei Maghrib-Übergang)
+        if (onDateCheckCallback) {
+            onDateCheckCallback();
         }
-        lastHighlightedPrayerName = currentHighlightName;
     }
 
     // --- Sekundliche Aktualisierung des Countdowns ---

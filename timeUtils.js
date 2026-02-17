@@ -7,12 +7,11 @@ import {
     useOverrideTime,
     overrideTime,
     overrideTimeSetAt,
-} from './debug.js'; // Importiere Debug-Statusvariablen
-import { timeOffset } from './main.js'; // Importiere den globalen timeOffset aus main.js
+} from './state.js'; // Importiere Zentralen State
 
 /**
  * Gibt die aktuelle Zeit zurück (Echtzeit oder Testzeit).
- * Berücksichtigt Debug-Overrides und den globalen timeOffset.
+ * Berücksichtigt Debug-Overrides.
  * @returns {Date} Das aktuelle Date-Objekt.
  */
 export function getCurrentTime() {
@@ -56,20 +55,7 @@ export function getCurrentTime() {
             nowForReal.getMilliseconds()
         );
     } else {
-        // Fall 3: Kein Debug-Override aktiv. Verwende die echte Zeit + globalen timeOffset.
-        // timeOffset ist in Stunden. Umrechnung in Millisekunden.
-        const offsetMilliseconds = (typeof timeOffset === 'number' ? timeOffset : 0) * 60 * 60 * 1000;
-        // ACHTUNG: In deiner ursprünglichen Logik hast du den Offset *subtrahiert*.
-        // Normalerweise addiert man einen positiven Offset oder subtrahiert einen negativen.
-        // Ich gehe davon aus, dass ein positiver timeOffset die Zeit "nach vorne" verschieben soll.
-        // Wenn timeOffset z.B. 2 ist, soll es 2 Stunden später sein.
-        // Wenn timeOffset -1 ist, soll es 1 Stunde früher sein.
-        // Deine Logik: `baseDate.getTime() - offset`
-        // Wenn timeOffset = 2 (2 Stunden in die Zukunft), dann `now - 2h` -> 2h in die Vergangenheit.
-        // Wenn das so gewollt ist, behalte das Minus.
-        // Üblicher wäre: `nowForReal.getTime() + offsetMilliseconds`
-        // Ich behalte deine Logik mit Minus bei, falls das Absicht war:
-        return new Date(nowForReal.getTime() - offsetMilliseconds);
+        return new Date();
     }
 }
 
@@ -86,13 +72,11 @@ export function parsePrayerTime(timeString, dateContextParam) {
         : getCurrentTime();
 
     if (!timeString || typeof timeString !== 'string' || !timeString.includes(':')) {
-        // console.warn(`Ungültiger Zeitstring für parsePrayerTime: ${timeString}`);
         return null;
     }
     try {
         const parts = timeString.split(':');
         if (parts.length < 2) {
-            // console.warn(`Ungültiges Format in Zeitstring: ${timeString}`);
             return null;
         }
         const hours = parseInt(parts[0], 10);
@@ -105,7 +89,6 @@ export function parsePrayerTime(timeString, dateContextParam) {
             minutes < 0 || minutes > 59 ||
             seconds < 0 || seconds > 59
         ) {
-            // console.warn(`Ungültige Stunden/Minuten/Sekunden in Zeitstring: ${timeString}`);
             return null;
         }
 
@@ -150,55 +133,3 @@ export function getIqamaEndTime(prayerConfig, adhanEndTime) {
     return iqamaEndTimeResult;
 }
 
-/**
- * Formatiert ein Date-Objekt in einen "HH:MM"-String.
- * @param {Date|string} dateInput - Das zu formatierende Date-Objekt oder ein Zeitstring.
- * @returns {string} Die formatierte Zeit oder "Ungültig" bei Fehlern.
- */
-export function formatTime(dateInput) {
-    if (typeof dateInput === 'string') {
-        // Wenn es bereits ein String ist (z.B. "05:30"), gib ihn direkt zurück,
-        // aber stelle sicher, dass er das HH:MM Format hat (optional).
-        // Für diese Funktion gehen wir davon aus, dass ein String bereits formatiert ist
-        // oder dass die Eingabe ein Date-Objekt sein sollte.
-        // Hier könnte man eine Validierung für den String einbauen.
-        // Fürs Erste: Wenn es ein String ist, der ':' enthält, nehmen wir an, er ist ok.
-        if (dateInput.includes(':')) return dateInput.substring(0,5); // Nur HH:MM
-        return 'Ungültig'; // Oder versuche, ihn zu parsen
-    }
-    if (!(dateInput instanceof Date) || isNaN(dateInput.getTime())) {
-        return 'Ungültig';
-    }
-    const hours = dateInput.getHours().toString().padStart(2, '0');
-    const minutes = dateInput.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-}
-
-// Du könntest hier auch calculateRemainingTime hinzufügen, falls es nicht woanders ist.
-/**
- * Berechnet die verbleibende Zeit bis zu einem Zielzeitpunkt.
- * @param {Date} targetTime - Der Zielzeitpunkt.
- * @param {Date} currentTime - Die aktuelle Zeit.
- * @returns {{hours: number, minutes: number, seconds: number, totalSeconds: number, isPast: boolean}}
- */
-export function calculateRemainingTime(targetTime, currentTime) {
-    if (!(targetTime instanceof Date) || !(currentTime instanceof Date) || isNaN(targetTime.getTime()) || isNaN(currentTime.getTime())) {
-        return { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0, isPast: true };
-    }
-
-    let diffMs = targetTime.getTime() - currentTime.getTime();
-    const isPast = diffMs < 0;
-
-    if (isPast) {
-        // Wenn das Ziel in der Vergangenheit liegt, können wir 0 zurückgeben oder die Differenz als positiv.
-        // Für einen Countdown ist 0 sinnvoll.
-        return { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0, isPast: true };
-    }
-
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return { hours, minutes, seconds, totalSeconds, isPast: false };
-}
