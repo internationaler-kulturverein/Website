@@ -1,5 +1,82 @@
 // config.js
 // Enthält globale Konfigurationen, Konstanten und CSS-Klassennamen.
+//
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║                      ANLEITUNG ZUM KONFIGURIEREN                       ║
+// ╠══════════════════════════════════════════════════════════════════════════╣
+// ║                                                                        ║
+// ║  1. JUMAA-ZEIT (Freitagsgebet) ÄNDERN                                  ║
+// ║  ────────────────────────────────────                                   ║
+// ║  Datei: main.js, Zeile ~305                                            ║
+// ║  Suche nach: setJumaaTimeUI('12:45')                                   ║
+// ║  Ändere die Zeit im Format 'HH:MM' (z.B. '13:00' oder '12:30').       ║
+// ║                                                                        ║
+// ║  2. ISHA-ZEIT: API vs. MANUELL                                         ║
+// ║  ─────────────────────────────────                                     ║
+// ║  Isha wird standardmäßig von der API abgerufen.                        ║
+// ║  Zusätzlich wird sie in main.js manuell überschrieben.                 ║
+// ║                                                                        ║
+// ║  → API verwenden (automatisch):                                        ║
+// ║    Datei: main.js, Zeile ~306                                          ║
+// ║    Die Zeile setIshaTimeUI('19:50') LÖSCHEN oder auskommentieren:      ║
+// ║    // setIshaTimeUI('19:50');                                          ║
+// ║    Dann wird die Isha-Zeit automatisch von der API bestimmt.           ║
+// ║                                                                        ║
+// ║  → Manuell setzen:                                                     ║
+// ║    Datei: main.js, Zeile ~306                                          ║
+// ║    Die Zeit in setIshaTimeUI('19:50') anpassen (Format 'HH:MM').       ║
+// ║    Diese überschreibt dann die API-Zeit.                               ║
+// ║                                                                        ║
+// ║  3. HIJRI-DATUM: MANUELL vs. API                                       ║
+// ║  ─────────────────────────────────                                     ║
+// ║  Das islamische Datum kann auf zwei Arten bestimmt werden:              ║
+// ║                                                                        ║
+// ║  a) API-Modus (automatisch):                                           ║
+// ║     Datei: config.js (diese Datei), Zeile ~199                         ║
+// ║     → Setze: HIJRI_MODE = 'api'                                        ║
+// ║     → Das Datum wird automatisch von der Aladhan-API geholt.           ║
+// ║     → Keine weiteren Einstellungen nötig.                              ║
+// ║                                                                        ║
+// ║  b) Manueller Modus:                                                   ║
+// ║     Datei: config.js (diese Datei), Zeile ~199 und ~204                ║
+// ║     → Setze: HIJRI_MODE = 'manual'                                     ║
+// ║     → Konfiguriere MANUAL_SETTINGS (Zeile ~204):                       ║
+// ║                                                                        ║
+// ║     Beispiel: Der 1. Ramadan beginnt am Abend des 27. Februar:         ║
+// ║       START_HIJRI_DAY: 1                                               ║
+// ║       START_HIJRI_MONTH_KEY: 'Ramadān'                                 ║
+// ║       START_HIJRI_YEAR: 1447                                           ║
+// ║       START_GREGORIAN_DATE_STR: '2025-02-27'                           ║
+// ║                                                                        ║
+// ║     Wichtig: Das gregorianische Datum ist der Tag, an dessen           ║
+// ║     ABEND (nach Maghrib) der islamische Tag beginnt.                   ║
+// ║     Der Zähler erhöht sich dann jeden Tag automatisch.                 ║
+// ║                                                                        ║
+// ║     Verfügbare Monatsnamen für START_HIJRI_MONTH_KEY:                  ║
+// ║       'Muharram', 'Safar', "Rabī' al-awwal",                          ║
+// ║       "Rabī' al-thānī", "Jumādā al-ūlā",                             ║
+// ║       "Jumādā al-ākhirah", 'Rajab', "Sha'bān",                        ║
+// ║       'Ramadān', 'Shawwāl', "Dhū al-Qa'dah",                         ║
+// ║       "Dhū al-Ḥijjah"                                                 ║
+// ║                                                                        ║
+// ║  4. EID-GEBET KONFIGURIEREN                                            ║
+// ║  ────────────────────────────                                          ║
+// ║  Datei: config.js (diese Datei), Zeile ~143                            ║
+// ║  Suche nach: eidPrayerConfig                                           ║
+// ║                                                                        ║
+// ║  → showEidPrayer: false/true                                           ║
+// ║    true  = Eid-Gebet wird auf der Website angezeigt.                   ║
+// ║    false = Eid-Gebet wird versteckt (Standard).                        ║
+// ║                                                                        ║
+// ║  → dayOfEid: '2025-06-06'                                             ║
+// ║    Das Datum des Eid-Gebets im Format YYYY-MM-DD.                      ║
+// ║                                                                        ║
+// ║  → timeOfEid: '06:30'                                                 ║
+// ║    Die Uhrzeit des Eid-Gebets im Format HH:MM.                        ║
+// ║                                                                        ║
+// ║  Wenn Eid vorbei ist: showEidPrayer wieder auf false setzen.           ║
+// ║                                                                        ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
 
 export const prayerTimesConfig = [
     {
@@ -140,14 +217,12 @@ export const MANUAL_SETTINGS = {
     // Der islamische Tag, der am Abend des START_GREGORIAN_DATE_STR beginnt.
     START_HIJRI_DAY: 1,
     // Der englische Schlüssel des Monats (muss in hijriMonthOrder und hijriMonthMap existieren).
-   START_HIJRI_MONTH_KEY: "Jumādā al-ākhirah",
+    START_HIJRI_MONTH_KEY: "Jumādā al-ākhirah",
     // Das islamische Jahr.
     START_HIJRI_YEAR: 1447,
-    // Das gregorianische Datum (Format YYYY-MM-DD), an dessen *Abend* (nach Maghrib)
+    // Das gregorianische Datum (Format YYYY-MM-DD), an dessen Abend (nach Maghrib)
     // der oben definierte START_HIJRI_DAY beginnt.
     // Beispiel: Wenn der 1. Ramadan am Abend des 27. Februar beginnt,
     // dann ist START_GREGORIAN_DATE_STR = "2025-02-27".
     START_GREGORIAN_DATE_STR: "2025-11-21",
 };
-
-

@@ -1,9 +1,26 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masjid Al Hikma - Gebetszeiten</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Gebetszeiten für die Masjid Al-Hikma Moschee in Regensburg. Fajr, Dhuhr, Asr, Maghrib, Isha, Jumma und Eid Gebet.">
+    <meta name="keywords"
+        content="Gebetszeiten Regensburg, Moschee Regensburg, Masjid Regensburg, Jumma Regensburg, Jumaa Regensburg, Eid Gebet Regensburg, Freitagsgebet Regensburg, Masjid Al-Hikma Regensburg, Islam Regensburg, Fajr Regensburg, Dhuhr Regensburg, Asr Regensburg, Maghrib Regensburg, Isha Regensburg">
+    <meta name="author" content="Masjid Al-Hikma Regensburg">
+    <link rel="canonical" href="https://moschee-alhikmah-regensburg.de/">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Gebetszeiten Regensburg - Masjid Al-Hikma">
+    <meta property="og:description"
+        content="Aktuelle Gebetszeiten, Jumma und Eid Gebet für die Masjid Al-Hikma in Regensburg.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://moschee-alhikmah-regensburg.de/">
+    <meta property="og:locale" content="de_DE">
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -14,70 +31,52 @@
     <meta name="apple-mobile-web-app-title" content="Gebetszeiten">
     <meta name="theme-color" content="#0f3156">
 
+    <!-- Font Preloading -->
+    <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+
     <!-- Bootstrap Bibliothek -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <!-- Eigene CSS Datei -->
     <link rel="stylesheet" href="./main.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
 </head>
 
 <body class="custom-bg">
-    <!-- ===== DEBUG TIME CONTROLS (Nur zum Testen!) ===== -->
-<!-- <div id="debug-controls" style="position: fixed; bottom: 10px; left: 10px; background-color: rgba(0,0,0,0.7); border: 1px solid #ccc; padding: 15px; border-radius: 5px; z-index: 1000; color: white; font-size: 0.9rem;">
-        <h6 style="margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #555; padding-bottom: 5px;">
-            Test Zeitsteuerung
-            <button id="close-debug-btn" style="position: absolute; top: 5px; right: 7px; background: none; border: none; color: #aaa; font-size: 16px; cursor: pointer; padding: 0 5px; line-height: 1;">&times;</button>
-        </h6>
-        
-        <div style="margin-bottom: 10px;">
-            <label for="override-date-input">Datum setzen:</label>
-            <input type="date" id="override-date-input" style="margin-left: 5px; padding: 3px;">
-        </div>
-        
-        <label for="override-time-input">Zeit setzen (HH:MM:SS):</label>
-        <input type="text" id="override-time-input" placeholder="z.B. 13:35:00" size="10" style="margin-left: 5px; padding: 3px;">
-        <div style="margin-top: 8px;">
-            <button id="set-override-time-btn" style="padding: 4px 8px; cursor: pointer;">Setze Test-Zeit</button>
-            <button id="reset-real-time-btn" style="padding: 4px 8px; cursor: pointer; margin-left: 10px;">Nutze Echtzeit</button>
-        </div>
-        <div style="margin-top: 10px;">
-            Aktive Zeit: <strong id="current-time-status" style="color: lightgreen;">Echtzeit</strong>
-        </div>
-    </div> -->
-    <!-- ===== ENDE DEBUG TIME CONTROLS ===== -->
-
+    <a href="#main-content" class="visually-hidden">Zum Inhalt springen</a>
     <!-- Navigationsbar -->
     <nav class="navbar navbar-expand-lg border-body" data-bs-theme="dark" style="background-color: rgba(0,0,0,0.2);">
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">
-            Masjid Al Hikmah<span class="brand-line-break"></span> Regensburg
-          </a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Home</a>
-              </li>
-            </ul>
-          </div>
+            <a class="navbar-brand" href="#">
+                Masjid Al Hikmah<span class="brand-line-break"></span> Regensburg
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-      </nav>
+    </nav>
 
     <!-- Layout Container -->
+    <main id="main-content">
     <div class="container pb-4">
 
         <div class="row mt-2 mb-2 justify-content-center align-items-center">
             <!-- Shuruk/Eid Card (Nur Desktop - lg und größer) -->
             <div class="col-lg-3 d-none d-lg-block">
-                <div class="card custom-bg-card text-white text-center" id="shurukDesktopCard"> <!-- ID für die Karte, falls benötigt -->
+                <div class="card custom-bg-card text-white text-center" id="shurukDesktopCard">
+                    <!-- ID für die Karte, falls benötigt -->
                     <div class="card-body">
                         <div class="d-flex flex-column align-items-center">
-                            <span class="prayer-title-wide" id="shurukTitleDesktopSide">Shuruk</span> <!-- ID für den Titel Desktop -->
-                            <span class="prayer-time" id="Sunrise_desktop_side">--:--</span> <!-- ID für die Zeit Desktop -->
+                            <span class="prayer-title-wide" id="shurukTitleDesktopSide">Shuruk</span>
+                            <!-- ID für den Titel Desktop -->
+                            <span class="prayer-time" id="Sunrise_desktop_side">--:--</span>
+                            <!-- ID für die Zeit Desktop -->
                         </div>
                     </div>
                 </div>
@@ -113,10 +112,12 @@
         <!-- Row NUR für den Countdown Timer -->
         <div class="row mb-2 justify-content-center">
             <div class="col-lg-5 col-md-6 text-center text-white">
-                <svg id="nextPrayerIcon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
-                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29-.139-.443-.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z"/>
+                <svg id="nextPrayerIcon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                    class="bi bi-hourglass-split" viewBox="0 0 16 16" role="img" aria-label="Countdown-Symbol">
+                    <path
+                        d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29-.139-.443-.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z" />
                 </svg>
-                <span class="prayer-title" id="nextPrayer">Gebetszeiten werden geladen...</span>
+                <span class="prayer-title" id="nextPrayer" role="timer" aria-live="polite">Gebetszeiten werden geladen...</span>
             </div>
         </div>
 
@@ -131,20 +132,24 @@
                             <div class="col text-end"><span class="prayer-time" id="Fajr">--:--</span></div>
                         </div>
                         <div class="row align-items-center" id="rowDhuhr">
-                             <div class="col prayer-name-column"><span class="prayer-title">Dhuhr</span></div>
-                             <div class="col prayer-time-column text-end"><span class="prayer-time" id="Dhuhr">--:--</span></div>
+                            <div class="col prayer-name-column"><span class="prayer-title">Dhuhr</span></div>
+                            <div class="col prayer-time-column text-end"><span class="prayer-time"
+                                    id="Dhuhr">--:--</span></div>
                         </div>
                         <div class="row align-items-center" id="rowAsr">
-                             <div class="col prayer-name-column"><span class="prayer-title">Asr</span></div>
-                             <div class="col prayer-time-column text-end"><span class="prayer-time" id="Asr">--:--</span></div>
+                            <div class="col prayer-name-column"><span class="prayer-title">Asr</span></div>
+                            <div class="col prayer-time-column text-end"><span class="prayer-time" id="Asr">--:--</span>
+                            </div>
                         </div>
                         <div class="row align-items-center" id="rowMaghrib">
-                             <div class="col prayer-name-column"><span class="prayer-title">Maghrib</span></div>
-                             <div class="col prayer-time-column text-end"><span class="prayer-time" id="Maghrib">--:--</span></div>
+                            <div class="col prayer-name-column"><span class="prayer-title">Maghrib</span></div>
+                            <div class="col prayer-time-column text-end"><span class="prayer-time"
+                                    id="Maghrib">--:--</span></div>
                         </div>
                         <div class="row align-items-center" id="rowIshaa">
-                             <div class="col prayer-name-column"><span class="prayer-title">Ishaa</span></div>
-                             <div class="col prayer-time-column text-end"><span class="prayer-time" id="Isha">--:--</span></div>
+                            <div class="col prayer-name-column"><span class="prayer-title">Ishaa</span></div>
+                            <div class="col prayer-time-column text-end"><span class="prayer-time"
+                                    id="Isha">--:--</span></div>
                         </div>
                     </div>
                 </div>
@@ -159,10 +164,12 @@
                             </div>
                             <div class="col-6" id="colShurukMobile"> <!-- ID für Shuruk/Eid Mobile Spalte -->
                                 <div class="d-flex flex-column gap-1">
-                                    <span class="prayer-title" id="shurukTitleMobile">Shuruk</span> <!-- ID für den Titel Mobile -->
-                                    <span class="prayer-time" id="Sunrise">--:--</span> <!-- ID für die Zeit Mobile (Sunrise wird für Shuruk/Eid Zeit verwendet) -->
+                                    <span class="prayer-title" id="shurukTitleMobile">Shuruk</span>
+                                    <!-- ID für den Titel Mobile -->
+                                    <span class="prayer-time" id="Sunrise">--:--</span>
+                                    <!-- ID für die Zeit Mobile (Sunrise wird für Shuruk/Eid Zeit verwendet) -->
                                 </div>
-                           </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -206,41 +213,22 @@
                         </div>
                     </div>
                 </div>
-                 <!-- ALTE DESKTOP FORMAT Jumaa / Shuruk Card (wird per CSS auf lg+ ausgeblendet, wenn die neuen oben sind) -->
-                 <!-- Diese Karte wird nicht mehr benötigt, da Jumaa und Shuruk/Eid jetzt oben neben der Uhrzeit sind -->
-                 <!-- <div class="card border-0 custom-bg-card text-white mt-3" id="original-desktop-jumaa-shuruk-card-bottom">
-                    <div class="card-body">
-                         <div class="row justify-content-around">
-                             <div class="col-md-4 text-center px-1">
-                                 <div class="d-flex flex-column gap-1" id="jumaaContainerDesktop">
-                                     <span class="prayer-title-wide">Jumaa</span>
-                                     <span class="prayer-time" id="Jumaa_wide">--:--</span>
-                                 </div>
-                             </div>
-                             <div class="col-md-4 text-center px-1">
-                                 <div class="d-flex flex-column gap-1" id="shurukContainerDesktop">
-                                     <span class="prayer-title-wide">Shuruk</span>
-                                     <span class="prayer-time" id="Sunrise_wide">--:--</span>
-                                 </div>
-                             </div>
-                         </div>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div> <!-- Ende Container -->
+    </main>
 
     <!-- Footer -->
-    <footer class="text-white text-center mt-auto" style="background-color: rgba(0,0,0,0.2); padding-top: 1rem; padding-bottom: 1rem;">
-      <div class="container">
-        <p class="mb-0">&copy; 2025 Masjid Al Hikma. Alle Rechte vorbehalten.</p>
-        <a href="impressum.html" class="text-white-50">Impressum</a> |
-        <a href="datenschutz.html" class="text-white-50">Datenschutz</a>
-      </div>
+    <footer class="text-white text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Masjid Al Hikma. Alle Rechte vorbehalten.</p>
+            <a href="impressum.html" class="text-white-50">Impressum</a> |
+            <a href="datenschutz.html" class="text-white-50">Datenschutz</a>
+        </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script type="module" src="./main.js"></script>
 </body>
+
 </html>

@@ -16,56 +16,66 @@ import {
     fetchCurrentIslamicDate as fetchApiCurrentIslamicDate,
     fetchIslamicDateForTomorrow as fetchApiIslamicDateForTomorrow,
 } from './api.js';
-import { findPrayerToHighlight, findNextPrayer } from './prayerLogic.js';
 import {
     updatePrayerTimesUI,
     displayError,
-    highlightPrayer,
-    updateNextPrayerTimerDisplay,
     updateIslamicDateUI,
     setJumaaTimeUI,
-    setIshaTimeUI, // Add this line
+    setIshaTimeUI,
     updateUI,
     updateTimeDisplay,
     updateDateDisplay,
+    registerDateCheckCallback,
 } from './ui.js';
-import { initializeDebugControls, loadDataAndRefreshUI as reloadDataFromDebug } from './debug.js';
+import { initializeDebugControls, loadDataAndRefreshUI as reloadDataFromDebug, registerReloadCallback } from './debug.js';
 
-// --- Globaler Zustand ---
-export let timeOffset = 0;
-export let prayerTimesData = {};
-export let initialDataLoaded = false;
-export let lastCheckedGregorianDate = null;
-export let midnightUpdateTimer = null;
-export let displayedIslamicDateObject = null;
-export let lastHighlightUpdateMinute = -1;
-let loadRetryCount = 0;
+import {
+    prayerTimesData,
+    initialDataLoaded,
+    lastCheckedGregorianDate,
+    midnightUpdateTimer,
+    displayedIslamicDateObject,
+    elements,
+    setPrayerTimesData,
+    setInitialDataLoaded,
+    setLastHighlightMinute,
+    setDisplayedIslamicDateObject,
+    setMidnightUpdateTimer,
+    setLastCheckedGregorianDate,
+    setElements,
+    setDebugElements,
+    getLoadRetryCount,
+    setLoadRetryCount,
+    incrementLoadRetryCount,
+    getIsFetchingIslamicDate,
+    setIsFetchingIslamicDate,
+    getCurrentHijriMode,
+    setCurrentHijriMode,
+    getIsHijriDateCheckedForToday,
+    setIsHijriDateCheckedForToday,
+} from './state.js';
+
 const MAX_RETRIES = 3;
-let isFetchingIslamicDate = false;
-let currentHijriMode = HIJRI_MODE;
 
-// --- DOM Elemente cachen ---
-export const elements = {
-    hoursAndMin: document.getElementById('hoursAndMin'),
-    seconds: document.getElementById('seconds'),
-    currentDate: document.getElementById('current-date'),
-    islamicDate: document.getElementById('islamic-date'),
-    nextPrayer: document.getElementById('nextPrayer'),
-    nextPrayerIcon: document.getElementById('nextPrayerIcon'),
-};
-export const debugElements = {
-    overrideTimeInput: document.getElementById('override-time-input'),
-    overrideDateInput: document.getElementById('override-date-input'),
-    setOverrideBtn: document.getElementById('set-override-time-btn'),
-    resetRealTimeBtn: document.getElementById('reset-real-time-btn'),
-    currentTimeStatus: document.getElementById('current-time-status'),
-};
+// --- DOM Elemente cachen via Setter in state.js ---
+function initializeLocalElements() {
+    setElements({
+        hoursAndMin: document.getElementById('hoursAndMin'),
+        seconds: document.getElementById('seconds'),
+        currentDate: document.getElementById('current-date'),
+        islamicDate: document.getElementById('islamic-date'),
+        nextPrayer: document.getElementById('nextPrayer'),
+        nextPrayerIcon: document.getElementById('nextPrayerIcon'),
+    });
+    setDebugElements({
+        overrideTimeInput: document.getElementById('override-time-input'),
+        overrideDateInput: document.getElementById('override-date-input'),
+        setOverrideBtn: document.getElementById('set-override-time-btn'),
+        resetRealTimeBtn: document.getElementById('reset-real-time-btn'),
+        currentTimeStatus: document.getElementById('current-time-status'),
+    });
+}
 
-// --- Setter-Funktionen ---
-export function setPrayerTimesData(data) { prayerTimesData = data; }
-export function setInitialDataLoaded(value) { initialDataLoaded = value; }
-export function setLastHighlightMinute(value) { lastHighlightUpdateMinute = value; }
-export function setDisplayedIslamicDateObject(data) { displayedIslamicDateObject = data; }
 // ----------------------------------------------------
 
 function getTomorrowDate(today) {
@@ -117,7 +127,6 @@ function calculateManualHijriDate(gregorianDateForCalculation) {
         const timeDiffMs = effectiveCalcDayStartLocal.getTime() - anchorDayStartLocal.getTime();
         const dayOffsetFromAnchor = Math.round(timeDiffMs / msPerDay);
 
-
         // Interpretation des dayOffsetFromAnchor:
         // - 0: effectiveCalcDayStartLocal ist derselbe Kalendertag wie anchorDayStartLocal.
         //      (Bedeutet: Vormittag des Tages, an dessen Abend der START_HIJRI_DAY beginnt -> Vormonat)
@@ -145,10 +154,10 @@ function calculateManualHijriDate(gregorianDateForCalculation) {
                 currentMonthIndex = hijriMonthOrder.length - 1;
                 currentYear--;
             }
-            currentDay += 30; // Addiere 30 Tage des (angenommenen) Vormonats
+            currentDay += 30;
         }
 
-        // Normalisierung für Monats-/Jahreswechsel vorwärts (Annahme: 30 Tage pro Monat)
+        // Normalisierung für Monats-/Jahreswechsel vorwärts
         while (currentDay > 30) {
             currentDay -= 30;
             currentMonthIndex++;
@@ -176,7 +185,6 @@ function calculateManualHijriDate(gregorianDateForCalculation) {
     }
 }
 
-
 async function fetchExpectedHijriData() {
     const now = getCurrentTime();
     const maghribTimeStr = prayerTimesData['Maghrib'];
@@ -191,7 +199,7 @@ async function fetchExpectedHijriData() {
         }
     }
 
-    if (currentHijriMode === 'manual') {
+    if (getCurrentHijriMode() === 'manual') {
         return Promise.resolve(calculateManualHijriDate(dateForCalculation));
     } else {
         if (isAfterMaghribFlag) {
@@ -203,9 +211,9 @@ async function fetchExpectedHijriData() {
 }
 
 export function checkAndUpdateIslamicDate() {
-    if (!initialDataLoaded || isFetchingIslamicDate) return;
-    console.log("Checking for Islamic date update..."); // Hinzugefügtes Logging
-    isFetchingIslamicDate = true;
+    if (!initialDataLoaded || getIsFetchingIslamicDate()) return;
+    if (getIsHijriDateCheckedForToday()) return;
+    setIsFetchingIslamicDate(true);
     fetchExpectedHijriData()
         .then(expectedHijriData => {
             if (expectedHijriData) {
@@ -224,10 +232,16 @@ export function checkAndUpdateIslamicDate() {
                     }
                 }
                 if (needsUiUpdate) {
-                    console.log("New Islamic date detected, updating UI.", expectedHijriData); // Hinzugefügtes Logging
                     updateIslamicDateUI(expectedHijriData);
-                } else {
-                    console.log("No Islamic date change detected."); // Hinzugefügtes Logging
+                }
+                // Flag nur nach Maghrib setzen, damit vor Maghrib weiter geprüft wird
+                const maghribStr = prayerTimesData['Maghrib'];
+                if (maghribStr) {
+                    const now = getCurrentTime();
+                    const maghribTime = parsePrayerTime(maghribStr, now);
+                    if (maghribTime && now >= maghribTime) {
+                        setIsHijriDateCheckedForToday(true);
+                    }
                 }
             }
         })
@@ -236,7 +250,7 @@ export function checkAndUpdateIslamicDate() {
             if (elements.islamicDate) elements.islamicDate.textContent = "Datumsfehler";
             setDisplayedIslamicDateObject(null);
         })
-        .finally(() => { isFetchingIslamicDate = false; });
+        .finally(() => { setIsFetchingIslamicDate(false); });
 }
 
 function checkGregorianDateChange() {
@@ -244,7 +258,6 @@ function checkGregorianDateChange() {
     const now = getCurrentTime();
     const currentDateStr = now.toDateString();
     if (lastCheckedGregorianDate && currentDateStr !== lastCheckedGregorianDate) {
-        console.log('GREGORIANISCHER DATUMSWECHSEL ERKANNT - Lade neue Daten');
         updateDateDisplay(); // Datum im UI aktualisieren
         if (typeof reloadDataFromDebug === 'function') {
             reloadDataFromDebug();
@@ -253,7 +266,7 @@ function checkGregorianDateChange() {
         }
         scheduleMidnightUpdate();
     }
-    lastCheckedGregorianDate = currentDateStr;
+    setLastCheckedGregorianDate(currentDateStr);
 }
 
 function scheduleMidnightUpdate() {
@@ -263,33 +276,43 @@ function scheduleMidnightUpdate() {
     midnight.setDate(midnight.getDate() + 1);
     midnight.setHours(0, 0, 1, 0);
     const msUntilMidnight = midnight.getTime() - now.getTime();
-    midnightUpdateTimer = setTimeout(() => {
-        console.log('MITTERNACHT ERREICHT - Lade neue Daten für neuen Tag');
+    setMidnightUpdateTimer(setTimeout(() => {
+        setIsHijriDateCheckedForToday(false);
         if (typeof reloadDataFromDebug === 'function') {
             reloadDataFromDebug();
         } else {
             loadInitialData();
         }
         scheduleMidnightUpdate();
-    }, msUntilMidnight);
+    }, msUntilMidnight));
 }
 
 export function loadInitialData() {
     setInitialDataLoaded(false);
     setLastHighlightMinute(-1);
-    isFetchingIslamicDate = false;
+    setIsFetchingIslamicDate(false);
+    setIsHijriDateCheckedForToday(false);
     displayError("Lade Gebetszeiten...");
     if (elements.islamicDate) elements.islamicDate.textContent = "Lade...";
     setDisplayedIslamicDateObject(null);
-    currentHijriMode = HIJRI_MODE;
+    setCurrentHijriMode(HIJRI_MODE);
 
-    fetchPrayerTimes(latitude, longitude, calculationMethod)
+    // Nach Maghrib-Reload: Gebetszeiten für morgen laden (islamischer Tag beginnt bei Maghrib)
+    let dateForApi = undefined;
+    if (sessionStorage.getItem('loadTomorrowTimes') === 'true') {
+        sessionStorage.removeItem('loadTomorrowTimes');
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateForApi = tomorrow;
+    }
+
+    fetchPrayerTimes(latitude, longitude, calculationMethod, dateForApi)
         .then((times) => {
             if (!times) throw new Error("Gebetszeiten konnten nicht abgerufen werden.");
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
-            setJumaaTimeUI('12:45'); // Beispiel
-            setIshaTimeUI('19:50'); // Beispiel
+            setJumaaTimeUI('12:45'); // Jumaa-Zeit (Freitagsgebet) — Anleitung zum Ändern: siehe config.js
+            setIshaTimeUI('19:50'); // Isha-Zeit (manuell überschrieben) — Anleitung zum Ändern: siehe config.js
             return fetchExpectedHijriData();
         })
         .then(hijriData => {
@@ -301,17 +324,17 @@ export function loadInitialData() {
                 setDisplayedIslamicDateObject(null);
             }
             setInitialDataLoaded(true);
-            lastCheckedGregorianDate = getCurrentTime().toDateString();
-            loadRetryCount = 0; // Reset retry count on success
+            setLastCheckedGregorianDate(getCurrentTime().toDateString());
+            setLoadRetryCount(0); // Reset retry count on success
+            scheduleMaghribReload();
             updateUI();
         })
         .catch((error) => {
             console.error('Fehler beim initialen Laden:', error.message);
 
-            if (loadRetryCount < MAX_RETRIES) {
-                loadRetryCount++;
+            if (getLoadRetryCount() < MAX_RETRIES) {
+                incrementLoadRetryCount();
                 const delay = 2000; // 2 seconds delay
-                console.log(`Verbindungsfehler. Versuch ${loadRetryCount} von ${MAX_RETRIES}. Neustart in ${delay}ms...`);
                 displayError(`Verbindungsfehler. Neuer Versuch in ${delay / 1000}s...`);
 
                 setTimeout(() => {
@@ -328,17 +351,55 @@ export function loadInitialData() {
         });
 }
 
+// --- Automatischer Seiten-Reload nach Maghrib (für 24/7-Betrieb) ---
+// Stellt sicher, dass die Seite täglich frische Daten bekommt und kein
+// Speicher oder Timer-Drift sich ansammelt. Der Reload erfolgt 10 Minuten
+// nach Maghrib-Zeit, damit das Gebet vollständig abgeschlossen ist.
+// Das Hijri-Datum ändert sich bereits bei Maghrib (via checkAndUpdateIslamicDate).
+// Nach dem Reload werden die Gebetszeiten für den NÄCHSTEN Tag geladen,
+// da im Islam der neue Tag mit Maghrib beginnt.
+function scheduleMaghribReload() {
+    if (!prayerTimesData['Maghrib']) return;
+
+    const now = getCurrentTime();
+    const maghribTime = parsePrayerTime(prayerTimesData['Maghrib'], now);
+    if (!maghribTime) return;
+
+    const reloadTime = maghribTime.getTime() + 10 * 60 * 1000; // Maghrib + 10 Minuten
+    const delay = reloadTime - now.getTime();
+
+    if (delay > 0) {
+        setTimeout(() => {
+            sessionStorage.setItem('loadTomorrowTimes', 'true');
+            location.reload();
+        }, delay);
+    }
+}
+
 function updateLoop() {
     updateTimeDisplay();
     if (initialDataLoaded) {
         updateUI();
-        // checkAndUpdateIslamicDate(); // REMOVED FROM HERE
         checkGregorianDateChange();
     }
 }
 
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && initialDataLoaded) {
+        checkAndUpdateIslamicDate();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
-    currentHijriMode = HIJRI_MODE;
+    initializeLocalElements(); // Initialize elements in state.js
+    setCurrentHijriMode(HIJRI_MODE);
+
+    // Registriere den Callback für regelmäßige Datumsprüfung (löst zirkuläre Abhängigkeit auf)
+    registerDateCheckCallback(checkAndUpdateIslamicDate);
+
+    // Registriere den Reload-Callback für debug.js (löst zirkuläre Abhängigkeit auf)
+    registerReloadCallback(() => loadInitialData());
+
     if (typeof initializeDebugControls === 'function') {
         initializeDebugControls();
     }
@@ -348,7 +409,3 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateLoop, 1000);
     scheduleMidnightUpdate();
 });
-
-
-
-

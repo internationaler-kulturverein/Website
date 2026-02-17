@@ -1,57 +1,30 @@
 // debug.js
 // Enthält die Logik und Zustandsvariablen für die Test-Zeitsteuerung.
 
-// config.js Importe bleiben
 import {
-    latitude,
-    longitude,
-    calculationMethod,
-    hijriMonthMap,
-} from './config.js';
-// ui.js Importe bleiben
-import {
-    updateUI,
-    updatePrayerTimesUI,
-    setJumaaTimeUI,
-    updateIslamicDateUI,
-    displayError,
-} from './ui.js';
-// main.js Importe anpassen
-import {
-    loadInitialData, // Zentrale Ladefunktion
-    setPrayerTimesData, // Wird hier nicht direkt verwendet, aber konsistent
-    setInitialDataLoaded, // Wird hier nicht direkt verwendet
-    setLastHighlightMinute, // Wichtig für UI-Refresh
-    debugElements, // KORREKT: Wird jetzt von main.js exportiert
-    elements, // Wird von updateIslamicDateUI benötigt
-    // setDisplayedIslamicDate, // ENTFERNT: UI setzt jetzt das Objekt über main.js
-    timeOffset as globalTimeOffset, // Importiere und benenne um, um Konflikt zu vermeiden
-} from './main.js';
+    setLastHighlightMinute,
+    debugElements,
+    useOverrideTime,
+    overrideTime,
+    useOverrideDate,
+    overrideDate,
+    setOverrideTimeState,
+    setOverrideDateState,
+} from './state.js';
 
-// Debug-Statusvariablen
-export let useOverrideTime = false;
-export let overrideTime = null;
-export let overrideTimeSetAt = null; // Zeitstempel, wann overrideTime gesetzt wurde
-export let useOverrideDate = false;
-export let overrideDate = null; // Das überschriebene Datum als Date-Objekt
+// --- Callback-Pattern zur Auflösung der zirkulären Abhängigkeit mit main.js ---
+let reloadDataCallback = null;
+export function registerReloadCallback(callback) {
+    reloadDataCallback = callback;
+}
 
-// Setter für timeOffset aus main.js (indirekt über getCurrentTime)
-// Wir müssen timeOffset in main.js aktualisieren.
-// Da wir es nicht direkt importieren können, um es zu ändern (ES6 Module sind live, aber nicht direkt beschreibbar von außen),
-// brauchen wir eine Funktion in main.js, um es zu setzen, oder wir exportieren timeOffset als Objekt.
-// Für diese Lösung: Wir nehmen an, dass getCurrentTime in timeUtils.js auf das exportierte timeOffset aus main.js zugreift.
-// Und wir brauchen eine Möglichkeit, timeOffset in main.js zu aktualisieren.
-// Einfachste Lösung für jetzt: debug.js setzt sein eigenes timeOffset, und timeUtils.js muss dieses verwenden.
-// Besser: main.js exportiert eine Funktion setTimeOffset.
-
-// In main.js: export function setGlobalTimeOffset(newOffset) { timeOffset = newOffset; }
-// In debug.js: import { setGlobalTimeOffset } from './main.js';
-// Dann in debug.js: setGlobalTimeOffset(berechneterOffset);
-// Für jetzt: Wir gehen davon aus, dass timeUtils.js das timeOffset aus main.js liest
-// und wir müssen es in main.js aktualisieren. Da das nicht direkt geht,
-// ist die beste Lösung, dass main.js eine Funktion exportiert, um timeOffset zu setzen.
-// Da du das nicht hast, machen wir es so, dass debug.js das timeOffset in main.js
-// indirekt über eine Neulade-Logik beeinflusst, die dann getCurrentTime neu bewertet.
+function invokeReloadData() {
+    if (typeof reloadDataCallback === 'function') {
+        reloadDataCallback();
+    } else {
+        console.error('reloadDataCallback ist nicht registriert. Bitte registerReloadCallback() aufrufen.');
+    }
+}
 
 /**
  * Aktualisiert die Statusanzeige der Test-Zeitsteuerung.
@@ -88,22 +61,19 @@ function setOverrideTime() {
             // Versuche, das Datum im Format YYYY-MM-DD zu parsen
             const parts = dateInput.split('-');
             if (parts.length === 3) {
-                overrideDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
-                if (isNaN(overrideDate.getTime())) {
+                const overrideDateTemp = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+                if (isNaN(overrideDateTemp.getTime())) {
                     alert('Ungültiges Datumformat. Bitte YYYY-MM-DD verwenden.');
-                    overrideDate = null;
-                    useOverrideDate = false;
+                    setOverrideDateState(false, null);
                 } else {
-                    useOverrideDate = true;
+                    setOverrideDateState(true, overrideDateTemp);
                 }
             } else {
                 alert('Ungültiges Datumformat. Bitte YYYY-MM-DD verwenden.');
-                overrideDate = null;
-                useOverrideDate = false;
+                setOverrideDateState(false, null);
             }
         } else {
-            useOverrideDate = false;
-            overrideDate = null;
+            setOverrideDateState(false, null);
         }
     }
 
@@ -126,30 +96,18 @@ function setOverrideTime() {
 
         // Basis für die Zeit ist entweder das overrideDate oder das aktuelle Datum
         const baseDate = useOverrideDate && overrideDate ? new Date(overrideDate) : new Date();
-        // Wichtig: overrideTime sollte die Zeitkomponenten des baseDate setzen,
-        // aber das Datum von baseDate beibehalten.
-        overrideTime = new Date(baseDate); // Kopiert das Datum von baseDate
-        overrideTime.setHours(hours, minutes, seconds, 0); // Setzt nur die Zeit
-
-        overrideTimeSetAt = new Date(); // Echte aktuelle Zeit, wann Override gesetzt wurde
-        useOverrideTime = true;
+        // State Update via Setter
+        const newOverrideTime = new Date(baseDate);
+        newOverrideTime.setHours(hours, minutes, seconds, 0);
+        setOverrideTimeState(true, newOverrideTime, new Date());
     } else {
-        useOverrideTime = false;
-        overrideTime = null;
-        overrideTimeSetAt = null;
+        setOverrideTimeState(false, null, null);
     }
 
     updateStatusDisplay();
-    console.log(
-        'Testeinstellungen aktiviert - Datum:',
-        useOverrideDate && overrideDate ? overrideDate.toLocaleDateString('de-DE') : 'Echtzeit',
-        'Zeit:',
-        useOverrideTime ? timeInput : 'Echtzeit'
-    );
 
     // Daten neu laden mit den Override-Einstellungen
-    // loadInitialData wird jetzt die korrekte Zeit über getCurrentTime (via timeUtils.js) bekommen.
-    loadInitialData();
+    invokeReloadData();
     setLastHighlightMinute(-1); // Erzwinge Highlight-Update
 }
 
@@ -157,16 +115,12 @@ function setOverrideTime() {
  * Setzt die Zeitsteuerung auf Echtzeit zurück.
  */
 function resetToRealTime() {
-    useOverrideTime = false;
-    overrideTime = null;
-    overrideTimeSetAt = null;
-    useOverrideDate = false;
-    overrideDate = null;
+    setOverrideTimeState(false, null, null);
+    setOverrideDateState(false, null);
 
     updateStatusDisplay();
-    console.log('Zurück zur Echtzeit');
 
-    loadInitialData();
+    invokeReloadData();
     setLastHighlightMinute(-1);
 }
 
@@ -175,10 +129,9 @@ function resetToRealTime() {
  * Sie soll sicherstellen, dass die Daten neu geladen werden, unter Berücksichtigung des Debug-Status.
  */
 export function loadDataAndRefreshUI() {
-    // console.log("loadDataAndRefreshUI in debug.js aufgerufen (wahrscheinlich durch Mitternachtswechsel in main.js)");
     // Die Kernlogik ist, loadInitialData aufzurufen, da diese Funktion
     // getCurrentTime verwendet, welche wiederum den Debug-Status berücksichtigt.
-    loadInitialData();
+    invokeReloadData();
 }
 
 /**
@@ -208,54 +161,4 @@ export function initializeDebugControls() {
     updateStatusDisplay(); // Initialen Status anzeigen
 }
 
-// Es ist wichtig, dass timeUtils.js `timeOffset` aus `main.js` korrekt verwendet.
-// Da `debug.js` `timeOffset` nicht direkt setzt, muss `getCurrentTime` in `timeUtils.js`
-// die exportierten `useOverrideTime`, `overrideTime`, `overrideTimeSetAt`, `useOverrideDate`, `overrideDate`
-// aus DIESER `debug.js`-Datei verwenden, um die korrekte Zeit zu ermitteln.
-
-// In timeUtils.js:
-/*
-import { timeOffset as globalTimeOffset } from './main.js'; // Das ist der Offset aus main.js
-import {
-    useOverrideTime,
-    overrideTime,
-    overrideTimeSetAt,
-    useOverrideDate,
-    overrideDate
-} from './debug.js'; // Importiere Debug-Status
-
-export function getCurrentTime() {
-    if (useOverrideTime && overrideTime && overrideTimeSetAt) {
-        const now = new Date();
-        const diffSinceOverrideSet = now.getTime() - overrideTimeSetAt.getTime();
-        const currentOverriddenTime = new Date(overrideTime.getTime() + diffSinceOverrideSet);
-        if (useOverrideDate && overrideDate) {
-            // Kombiniere Datum von overrideDate mit Zeit von currentOverriddenTime
-            return new Date(
-                overrideDate.getFullYear(),
-                overrideDate.getMonth(),
-                overrideDate.getDate(),
-                currentOverriddenTime.getHours(),
-                currentOverriddenTime.getMinutes(),
-                currentOverriddenTime.getSeconds()
-            );
-        }
-        return currentOverriddenTime;
-    }
-    if (useOverrideDate && overrideDate) {
-        // Verwende overrideDate mit aktueller realer Zeit
-        const realNow = new Date();
-        return new Date(
-            overrideDate.getFullYear(),
-            overrideDate.getMonth(),
-            overrideDate.getDate(),
-            realNow.getHours(),
-            realNow.getMinutes(),
-            realNow.getSeconds()
-        );
-    }
-    // Kein Override, verwende echte Zeit + globalen Offset (falls vorhanden)
-    const now = new Date();
-    return new Date(now.getTime() + (globalTimeOffset || 0) * 60 * 60 * 1000);
-}
-*/
+// End of debug.js
