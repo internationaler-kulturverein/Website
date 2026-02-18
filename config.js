@@ -217,12 +217,13 @@ export const MANUAL_SETTINGS = {
     // Der islamische Tag, der am Abend des START_GREGORIAN_DATE_STR beginnt.
     START_HIJRI_DAY: 1,
     // Der englische Schlüssel des Monats (muss in hijriMonthOrder und hijriMonthMap existieren).
-    START_HIJRI_MONTH_KEY: "Jumādā al-ākhirah",
+    START_HIJRI_MONTH_KEY: "Ramadān",
     // Das islamische Jahr.
     START_HIJRI_YEAR: 1447,
     // Das gregorianische Datum (Format YYYY-MM-DD), an dessen Abend (nach Maghrib)
     // der oben definierte START_HIJRI_DAY beginnt.
     // Beispiel: Wenn der 1. Ramadan am Abend des 27. Februar beginnt,
     // dann ist START_GREGORIAN_DATE_STR = "2025-02-27".
-    START_GREGORIAN_DATE_STR: "2025-11-21",
+    START_GREGORIAN_DATE_STR: "2026-02-18",
 };
+
