@@ -254,17 +254,18 @@ export function checkAndUpdateIslamicDate() {
 }
 
 function checkGregorianDateChange() {
-    if (!initialDataLoaded) return;
     const now = getCurrentTime();
     const currentDateStr = now.toDateString();
     if (lastCheckedGregorianDate && currentDateStr !== lastCheckedGregorianDate) {
-        updateDateDisplay(); // Datum im UI aktualisieren
-        if (typeof reloadDataFromDebug === 'function') {
-            reloadDataFromDebug();
-        } else {
-            loadInitialData();
+        updateDateDisplay(); // Datum im UI IMMER aktualisieren
+        if (initialDataLoaded) {
+            if (typeof reloadDataFromDebug === 'function') {
+                reloadDataFromDebug();
+            } else {
+                loadInitialData();
+            }
+            scheduleMidnightUpdate();
         }
-        scheduleMidnightUpdate();
     }
     setLastCheckedGregorianDate(currentDateStr);
 }
@@ -309,13 +310,31 @@ export function loadInitialData() {
     fetchPrayerTimes(latitude, longitude, calculationMethod, dateForApi)
         .then((times) => {
             if (!times) throw new Error("Gebetszeiten konnten nicht abgerufen werden.");
+
+            // Bei frischem Load (kein explizites Datum): Prüfe ob nach Maghrib
+            if (!dateForApi && times['Maghrib']) {
+                const now = getCurrentTime();
+                const maghribTime = parsePrayerTime(times['Maghrib'], now);
+                if (maghribTime && now >= maghribTime) {
+                    // Nach Maghrib: Lade Gebetszeiten für morgen
+                    const tomorrow = getTomorrowDate(now);
+                    return fetchPrayerTimes(latitude, longitude, calculationMethod, tomorrow)
+                        .then(tomorrowTimes => {
+                            if (!tomorrowTimes) throw new Error("Morgige Gebetszeiten konnten nicht abgerufen werden.");
+                            return { times: tomorrowTimes, loadedTomorrow: true };
+                        });
+                }
+            }
+            return { times, loadedTomorrow: !!dateForApi };
+        })
+        .then(({ times, loadedTomorrow }) => {
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
             setJumaaTimeUI('12:45'); // Jumaa-Zeit (Freitagsgebet) — Anleitung zum Ändern: siehe config.js
             setIshaTimeUI('19:50'); // Isha-Zeit (manuell überschrieben) — Anleitung zum Ändern: siehe config.js
-            return fetchExpectedHijriData();
+            return fetchExpectedHijriData().then(hijriData => ({ hijriData, loadedTomorrow }));
         })
-        .then(hijriData => {
+        .then(({ hijriData, loadedTomorrow }) => {
             if (hijriData) {
                 updateIslamicDateUI(hijriData);
             } else {
@@ -326,7 +345,10 @@ export function loadInitialData() {
             setInitialDataLoaded(true);
             setLastCheckedGregorianDate(getCurrentTime().toDateString());
             setLoadRetryCount(0); // Reset retry count on success
-            scheduleMaghribReload();
+            if (!loadedTomorrow) {
+                scheduleMaghribReload(); // Nur wenn heutige Zeiten geladen (kein Doppel-Reload)
+            }
+            updateDateDisplay();
             updateUI();
         })
         .catch((error) => {
@@ -347,6 +369,7 @@ export function loadInitialData() {
                 setPrayerTimesData({});
                 setDisplayedIslamicDateObject(null);
                 if (elements.islamicDate) elements.islamicDate.textContent = "Fehler";
+                updateDateDisplay(); // Datum trotzdem aktualisieren
             }
         });
 }
@@ -378,9 +401,9 @@ function scheduleMaghribReload() {
 
 function updateLoop() {
     updateTimeDisplay();
+    checkGregorianDateChange();      // IMMER ausführen — auch ohne API-Daten
     if (initialDataLoaded) {
         updateUI();
-        checkGregorianDateChange();
     }
 }
 
