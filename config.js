@@ -11,21 +11,37 @@
 // ║  Suche nach: setJumaaTimeUI('12:45')                                   ║
 // ║  Ändere die Zeit im Format 'HH:MM' (z.B. '13:00' oder '12:30').       ║
 // ║                                                                        ║
-// ║  2. ISHA-ZEIT: API vs. MANUELL                                         ║
-// ║  ─────────────────────────────────                                     ║
-// ║  Isha wird standardmäßig von der API abgerufen.                        ║
-// ║  Zusätzlich wird sie in main.js manuell überschrieben.                 ║
+// ║  2. ISHA-ZEIT: 3 MODI                                                  ║
+// ║  ────────────────────                                                  ║
+// ║  Es gibt 3 Modi für die Isha-Zeit. Der Schlüssel ist die Zeile        ║
+// ║  setIshaTimeUI(...) in main.js (~Zeile 315): Ist sie aktiv,           ║
+// ║  überschreibt sie IMMER die API-Zeit — egal was tuneOffsets sagt.     ║
+// ║  Ist sie auskommentiert, bestimmt tuneOffsets den Modus.              ║
 // ║                                                                        ║
-// ║  → API verwenden (automatisch):                                        ║
-// ║    Datei: main.js, Zeile ~306                                          ║
-// ║    Die Zeile setIshaTimeUI('19:50') LÖSCHEN oder auskommentieren:      ║
-// ║    // setIshaTimeUI('19:50');                                          ║
-// ║    Dann wird die Isha-Zeit automatisch von der API bestimmt.           ║
+// ║  MODUS 1 — MANUELL (feste Zeit, unabhängig von der API):             ║
+// ║    → setIshaTimeUI('19:50') in main.js aktiv lassen                   ║
+// ║    → Zeit im Format 'HH:MM' anpassen                                  ║
+// ║    → tuneOffsets Position 7 wird komplett ignoriert                   ║
+// ║    Wann sinnvoll: Wenn man eine feste Zeit unabhängig von der          ║
+// ║    API erzwingen möchte.                                               ║
 // ║                                                                        ║
-// ║  → Manuell setzen:                                                     ║
-// ║    Datei: main.js, Zeile ~306                                          ║
-// ║    Die Zeit in setIshaTimeUI('19:50') anpassen (Format 'HH:MM').       ║
-// ║    Diese überschreibt dann die API-Zeit.                               ║
+// ║  MODUS 2 — HYBRID (API-Zeit + fester Offset, empfohlen):             ║
+// ║    → setIshaTimeUI(...) in main.js auskommentieren:                   ║
+// ║       // setIshaTimeUI('19:50');                                       ║
+// ║    → tuneOffsets (Zeile ~183), Position 7 auf gewünschten             ║
+// ║      Offset in Minuten setzen:                                         ║
+// ║       tuneOffsets = '0,0,0,5,0,3,0,XX,0'  ← XX = Minuten             ║
+// ║    Beispiele: XX=15 → API+15 Min / XX=30 → API+30 Min                 ║
+// ║    Wann sinnvoll: API weicht von der lokalen Gebetszeit ab —           ║
+// ║    der Offset korrigiert das einmalig, die API passt sich              ║
+// ║    täglich automatisch an.                                             ║
+// ║                                                                        ║
+// ║  MODUS 3 — REINER API-MODUS (vollautomatisch):                       ║
+// ║    → setIshaTimeUI(...) in main.js auskommentieren:                   ║
+// ║       // setIshaTimeUI('19:50');                                       ║
+// ║    → tuneOffsets Position 7 auf 0 lassen                              ║
+// ║    Wann sinnvoll: Wenn die API-Zeit exakt mit der lokalen              ║
+// ║    Gebetszeit übereinstimmt.                               ║
 // ║                                                                        ║
 // ║  3. HIJRI-DATUM: MANUELL vs. API                                       ║
 // ║  ─────────────────────────────────                                     ║
@@ -180,7 +196,7 @@ export const latitude = 49.0034; // Beispiel: Regensburg
 export const longitude = 12.1213; // Beispiel: Regensburg
 export const calculationMethod = 99; // Für Custom Settings
 export const methodSettingsParam = '12.55,,12.65'; // Beispiel: Fajr 12.55°, Isha 12.65°
-export const tuneOffsets = '0,0,0,5,0,3,0,0,0'; // Beispiel: Maghrib +5 Min, Isha +3 Min
+export const tuneOffsets = '0,0,0,5,0,3,0,20,0'; // Beispiel: Maghrib +5 Min, Isha +3 Min
 
 // Übersetzung der englischen Monats-Schlüssel zu deutschen Namen
 export const hijriMonthMap = {
