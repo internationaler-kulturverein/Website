@@ -331,7 +331,7 @@ export function loadInitialData() {
             setPrayerTimesData(times);
             updatePrayerTimesUI(times);
             setJumaaTimeUI('12:45'); // Jumaa-Zeit (Freitagsgebet) — Anleitung zum Ändern: siehe config.js
-            setIshaTimeUI('19:50'); // Isha-Zeit (manuell überschrieben) — Anleitung zum Ändern: siehe config.js
+            //setIshaTimeUI('19:50'); // Isha-Zeit (manuell überschrieben) — Anleitung zum Ändern: siehe config.js
             return fetchExpectedHijriData().then(hijriData => ({ hijriData, loadedTomorrow }));
         })
         .then(({ hijriData, loadedTomorrow }) => {
