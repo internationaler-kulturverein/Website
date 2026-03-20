@@ -169,11 +169,11 @@ export const sunriseConfig = {
 };
 
 export const eidPrayerConfig = {
-    showEidPrayer: false, // Auf true setzen, um Eid-Gebet anzuzeigen
+    showEidPrayer: true, // Auf true setzen, um Eid-Gebet anzuzeigen
     name: 'Eid', // Interner Name
     displayName: 'Eid Gebet',
-    dayOfEid: '2025-06-06', // Beispiel: YYYY-MM-DD Format. Passe dies an.
-    timeOfEid: '06:30', // Beispiel: HH:MM Format
+    dayOfEid: '2026-03-20', // Beispiel: YYYY-MM-DD Format. Passe dies an.
+    timeOfEid: '07:30', // Beispiel: HH:MM Format
     adhanDurationMinutes: 2,
     iqamaDurationMinutes: 10,
     // UI-Element-IDs für Titel (werden von sunriseConfig "geliehen" bzw. sind neu)
