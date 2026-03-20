@@ -240,6 +240,6 @@ export const MANUAL_SETTINGS = {
     // der oben definierte START_HIJRI_DAY beginnt.
     // Beispiel: Wenn der 1. Ramadan am Abend des 27. Februar beginnt,
     // dann ist START_GREGORIAN_DATE_STR = "2025-02-27".
-    START_GREGORIAN_DATE_STR: "2026-03-20",
+    START_GREGORIAN_DATE_STR: "2026-03-19",
 };
 
