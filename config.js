@@ -77,7 +77,7 @@
 // ║                                                                        ║
 // ║  4. EID-GEBET KONFIGURIEREN                                            ║
 // ║  ────────────────────────────                                          ║
-// ║  Datei: config.js (diese Datei), Zeile ~143                            ║
+// ║  Datei: config.js (diese Datei), Zeile ~173                            ║
 // ║  Suche nach: eidPrayerConfig                                           ║
 // ║                                                                        ║
 // ║  → showEidPrayer: false/true                                           ║
@@ -169,7 +169,7 @@ export const sunriseConfig = {
 };
 
 export const eidPrayerConfig = {
-    showEidPrayer: true, // Auf true setzen, um Eid-Gebet anzuzeigen
+    showEidPrayer: false, // Auf true setzen, um Eid-Gebet anzuzeigen
     name: 'Eid', // Interner Name
     displayName: 'Eid Gebet',
     dayOfEid: '2026-03-20', // Beispiel: YYYY-MM-DD Format. Passe dies an.
