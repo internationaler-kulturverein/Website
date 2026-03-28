@@ -2,96 +2,96 @@
 // Enthält globale Konfigurationen, Konstanten und CSS-Klassennamen.
 //
 // ╔══════════════════════════════════════════════════════════════════════════╗
-// ║                      ANLEITUNG ZUM KONFIGURIEREN                       ║
+// ║                      ANLEITUNG ZUM KONFIGURIEREN                         ║
 // ╠══════════════════════════════════════════════════════════════════════════╣
-// ║                                                                        ║
-// ║  1. JUMAA-ZEIT (Freitagsgebet) ÄNDERN                                  ║
-// ║  ────────────────────────────────────                                   ║
-// ║  Datei: main.js, Zeile ~305                                            ║
-// ║  Suche nach: setJumaaTimeUI('12:45')                                   ║
-// ║  Ändere die Zeit im Format 'HH:MM' (z.B. '13:00' oder '12:30').       ║
-// ║                                                                        ║
-// ║  2. ISHA-ZEIT: 3 MODI                                                  ║
-// ║  ────────────────────                                                  ║
-// ║  Es gibt 3 Modi für die Isha-Zeit. Der Schlüssel ist die Zeile        ║
-// ║  setIshaTimeUI(...) in main.js (~Zeile 315): Ist sie aktiv,           ║
-// ║  überschreibt sie IMMER die API-Zeit — egal was tuneOffsets sagt.     ║
-// ║  Ist sie auskommentiert, bestimmt tuneOffsets den Modus.              ║
-// ║                                                                        ║
-// ║  MODUS 1 — MANUELL (feste Zeit, unabhängig von der API):             ║
-// ║    → setIshaTimeUI('19:50') in main.js aktiv lassen                   ║
-// ║    → Zeit im Format 'HH:MM' anpassen                                  ║
-// ║    → tuneOffsets Position 7 wird komplett ignoriert                   ║
-// ║    Wann sinnvoll: Wenn man eine feste Zeit unabhängig von der          ║
-// ║    API erzwingen möchte.                                               ║
-// ║                                                                        ║
-// ║  MODUS 2 — HYBRID (API-Zeit + fester Offset, empfohlen):             ║
-// ║    → setIshaTimeUI(...) in main.js auskommentieren:                   ║
-// ║       // setIshaTimeUI('19:50');                                       ║
-// ║    → tuneOffsets (Zeile ~183), Position 7 auf gewünschten             ║
-// ║      Offset in Minuten setzen:                                         ║
-// ║       tuneOffsets = '0,0,0,5,0,3,0,XX,0'  ← XX = Minuten             ║
-// ║    Beispiele: XX=15 → API+15 Min / XX=30 → API+30 Min                 ║
-// ║    Wann sinnvoll: API weicht von der lokalen Gebetszeit ab —           ║
-// ║    der Offset korrigiert das einmalig, die API passt sich              ║
-// ║    täglich automatisch an.                                             ║
-// ║                                                                        ║
-// ║  MODUS 3 — REINER API-MODUS (vollautomatisch):                       ║
-// ║    → setIshaTimeUI(...) in main.js auskommentieren:                   ║
-// ║       // setIshaTimeUI('19:50');                                       ║
-// ║    → tuneOffsets Position 7 auf 0 lassen                              ║
-// ║    Wann sinnvoll: Wenn die API-Zeit exakt mit der lokalen              ║
-// ║    Gebetszeit übereinstimmt.                               ║
-// ║                                                                        ║
-// ║  3. HIJRI-DATUM: MANUELL vs. API                                       ║
-// ║  ─────────────────────────────────                                     ║
-// ║  Das islamische Datum kann auf zwei Arten bestimmt werden:              ║
-// ║                                                                        ║
-// ║  a) API-Modus (automatisch):                                           ║
-// ║     Datei: config.js (diese Datei), Zeile ~199                         ║
-// ║     → Setze: HIJRI_MODE = 'api'                                        ║
-// ║     → Das Datum wird automatisch von der Aladhan-API geholt.           ║
-// ║     → Keine weiteren Einstellungen nötig.                              ║
-// ║                                                                        ║
-// ║  b) Manueller Modus:                                                   ║
-// ║     Datei: config.js (diese Datei), Zeile ~199 und ~204                ║
-// ║     → Setze: HIJRI_MODE = 'manual'                                     ║
-// ║     → Konfiguriere MANUAL_SETTINGS (Zeile ~204):                       ║
-// ║                                                                        ║
-// ║     Beispiel: Der 1. Ramadan beginnt am Abend des 27. Februar:         ║
-// ║       START_HIJRI_DAY: 1                                               ║
-// ║       START_HIJRI_MONTH_KEY: 'Ramadān'                                 ║
-// ║       START_HIJRI_YEAR: 1447                                           ║
-// ║       START_GREGORIAN_DATE_STR: '2025-02-27'                           ║
-// ║                                                                        ║
-// ║     Wichtig: Das gregorianische Datum ist der Tag, an dessen           ║
-// ║     ABEND (nach Maghrib) der islamische Tag beginnt.                   ║
-// ║     Der Zähler erhöht sich dann jeden Tag automatisch.                 ║
-// ║                                                                        ║
-// ║     Verfügbare Monatsnamen für START_HIJRI_MONTH_KEY:                  ║
-// ║       'Muharram', 'Safar', "Rabī' al-awwal",                          ║
-// ║       "Rabī' al-thānī", "Jumādā al-ūlā",                             ║
-// ║       "Jumādā al-ākhirah", 'Rajab', "Sha'bān",                        ║
-// ║       'Ramadān', 'Shawwāl', "Dhū al-Qa'dah",                         ║
-// ║       "Dhū al-Ḥijjah"                                                 ║
-// ║                                                                        ║
-// ║  4. EID-GEBET KONFIGURIEREN                                            ║
-// ║  ────────────────────────────                                          ║
-// ║  Datei: config.js (diese Datei), Zeile ~173                            ║
-// ║  Suche nach: eidPrayerConfig                                           ║
-// ║                                                                        ║
-// ║  → showEidPrayer: false/true                                           ║
-// ║    true  = Eid-Gebet wird auf der Website angezeigt.                   ║
-// ║    false = Eid-Gebet wird versteckt (Standard).                        ║
-// ║                                                                        ║
-// ║  → dayOfEid: '2025-06-06'                                             ║
-// ║    Das Datum des Eid-Gebets im Format YYYY-MM-DD.                      ║
-// ║                                                                        ║
-// ║  → timeOfEid: '06:30'                                                 ║
-// ║    Die Uhrzeit des Eid-Gebets im Format HH:MM.                        ║
-// ║                                                                        ║
-// ║  Wenn Eid vorbei ist: showEidPrayer wieder auf false setzen.           ║
-// ║                                                                        ║
+// ║                                                                          ║
+// ║  1. JUMAA-ZEIT (Freitagsgebet) ÄNDERN                                    ║
+// ║  ────────────────────────────────────                                    ║
+// ║  Datei: main.js, Zeile 333                                               ║
+// ║  Suche nach: setJumaaTimeUI('12:45')                                     ║
+// ║  Ändere die Zeit im Format 'HH:MM' (z.B. '13:00' oder '12:30').          ║
+// ║                                                                          ║
+// ║  2. ISHA-ZEIT: 3 MODI                                                    ║
+// ║  ────────────────────                                                    ║
+// ║  Es gibt 3 Modi für die Isha-Zeit. Der Schlüssel ist die Zeile           ║
+// ║  setIshaTimeUI(...) in main.js (~Zeile 315): Ist sie aktiv,              ║
+// ║  überschreibt sie IMMER die API-Zeit — egal was tuneOffsets sagt.        ║
+// ║  Ist sie auskommentiert, bestimmt tuneOffsets den Modus.                 ║
+// ║                                                                          ║
+// ║  MODUS 1 — MANUELL (feste Zeit, unabhängig von der API):                 ║
+// ║    → setIshaTimeUI('19:50') in main.js aktiv lassen                      ║
+// ║    → Zeit im Format 'HH:MM' anpassen                                     ║
+// ║    → tuneOffsets Position 7 wird komplett ignoriert                      ║
+// ║    Wann sinnvoll: Wenn man eine feste Zeit unabhängig von der            ║
+// ║    API erzwingen möchte.                                                 ║
+// ║                                                                          ║
+// ║  MODUS 2 — HYBRID (API-Zeit + fester Offset, empfohlen):                 ║
+// ║    → setIshaTimeUI(...) in main.js auskommentieren:                      ║
+// ║       // setIshaTimeUI('19:50');                                         ║
+// ║    → tuneOffsets (Zeile ~183), Position 7 auf gewünschten                ║
+// ║      Offset in Minuten setzen:                                           ║
+// ║       tuneOffsets = '0,0,0,5,0,3,0,XX,0'  ← XX = Minuten                 ║
+// ║    Beispiele: XX=15 → API+15 Min / XX=30 → API+30 Min                    ║
+// ║    Wann sinnvoll: API weicht von der lokalen Gebetszeit ab —             ║
+// ║    der Offset korrigiert das einmalig, die API passt sich                ║
+// ║    täglich automatisch an.                                               ║
+// ║                                                                          ║
+// ║  MODUS 3 — REINER API-MODUS (vollautomatisch):                           ║
+// ║    → setIshaTimeUI(...) in main.js auskommentieren:                      ║
+// ║       // setIshaTimeUI('19:50');                                         ║
+// ║    → tuneOffsets Position 7 auf 0 lassen                                 ║
+// ║    Wann sinnvoll: Wenn die API-Zeit exakt mit der lokalen                ║
+// ║    Gebetszeit übereinstimmt.                                             ║
+// ║                                                                          ║
+// ║  3. HIJRI-DATUM: MANUELL vs. API                                         ║
+// ║  ─────────────────────────────────                                       ║
+// ║  Das islamische Datum kann auf zwei Arten bestimmt werden:               ║
+// ║                                                                          ║
+// ║  a) API-Modus (automatisch):                                             ║
+// ║     Datei: config.js (diese Datei), Zeile ~199                           ║
+// ║     → Setze: HIJRI_MODE = 'api'                                          ║
+// ║     → Das Datum wird automatisch von der Aladhan-API geholt.             ║
+// ║     → Keine weiteren Einstellungen nötig.                                ║
+// ║                                                                          ║
+// ║  b) Manueller Modus:                                                     ║
+// ║     Datei: config.js (diese Datei), Zeile ~199 und ~204                  ║
+// ║     → Setze: HIJRI_MODE = 'manual'                                       ║
+// ║     → Konfiguriere MANUAL_SETTINGS (Zeile ~204):                         ║
+// ║                                                                          ║
+// ║     Beispiel: Der 1. Ramadan beginnt am Abend des 27. Februar:           ║
+// ║       START_HIJRI_DAY: 1                                                 ║
+// ║       START_HIJRI_MONTH_KEY: 'Ramadān'                                   ║
+// ║       START_HIJRI_YEAR: 1447                                             ║
+// ║       START_GREGORIAN_DATE_STR: '2025-02-27'                             ║
+// ║                                                                          ║
+// ║     Wichtig: Das gregorianische Datum ist der Tag, an dessen             ║
+// ║     ABEND (nach Maghrib) der islamische Tag beginnt.                     ║
+// ║     Der Zähler erhöht sich dann jeden Tag automatisch.                   ║
+// ║                                                                          ║
+// ║     Verfügbare Monatsnamen für START_HIJRI_MONTH_KEY:                    ║
+// ║       'Muharram', 'Safar', "Rabī' al-awwal",                             ║
+// ║       "Rabī' al-thānī", "Jumādā al-ūlā",                                 ║
+// ║       "Jumādā al-ākhirah", 'Rajab', "Sha'bān",                           ║
+// ║       'Ramadān', 'Shawwāl', "Dhū al-Qa'dah",                             ║
+// ║       "Dhū al-Ḥijjah"                                                    ║
+// ║                                                                          ║
+// ║  4. EID-GEBET KONFIGURIEREN                                              ║
+// ║  ────────────────────────────                                            ║
+// ║  Datei: config.js (diese Datei), Zeile ~173                              ║
+// ║  Suche nach: eidPrayerConfig                                             ║
+// ║                                                                          ║
+// ║  → showEidPrayer: false/true                                             ║
+// ║    true  = Eid-Gebet wird auf der Website angezeigt.                     ║
+// ║    false = Eid-Gebet wird versteckt (Standard).                          ║
+// ║                                                                          ║
+// ║  → dayOfEid: '2025-06-06'                                                ║
+// ║    Das Datum des Eid-Gebets im Format YYYY-MM-DD.                        ║
+// ║                                                                          ║
+// ║  → timeOfEid: '06:30'                                                    ║
+// ║    Die Uhrzeit des Eid-Gebets im Format HH:MM.                           ║
+// ║                                                                          ║
+// ║  Wenn Eid vorbei ist: showEidPrayer wieder auf false setzen.             ║
+// ║                                                                          ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 
 export const prayerTimesConfig = [
