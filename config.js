@@ -196,7 +196,7 @@ export const latitude = 49.0034; // Beispiel: Regensburg
 export const longitude = 12.1213; // Beispiel: Regensburg
 export const calculationMethod = 99; // Für Custom Settings
 export const methodSettingsParam = '12.55,,12.65'; // Beispiel: Fajr 12.55°, Isha 12.65°
-export const tuneOffsets = '0,0,0,5,0,3,0,15,0'; // Beispiel: Dhuhur +5 Min, Maghreb +3 Min, Isha +18 Min
+export const tuneOffsets = '0,0,0,5,0,3,0,12,0'; // Beispiel: Dhuhur +5 Min, Maghreb +3 Min, Isha +18 Min
 
 // Übersetzung der englischen Monats-Schlüssel zu deutschen Namen
 export const hijriMonthMap = {
