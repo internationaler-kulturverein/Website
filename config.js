@@ -48,7 +48,7 @@
 // ║  Das islamische Datum kann auf zwei Arten bestimmt werden:               ║
 // ║                                                                          ║
 // ║  a) API-Modus (automatisch):                                             ║
-// ║     Datei: config.js (diese Datei), Zeile ~199                           ║
+// ║     Datei: config.js (diese Datei), Zeile 277                            ║
 // ║     → Setze: HIJRI_MODE = 'api'                                          ║
 // ║     → Das Datum wird automatisch von der Aladhan-API geholt.             ║
 // ║     → Keine weiteren Einstellungen nötig.                                ║
@@ -224,7 +224,7 @@ export const hijriMonthOrder = [
 // --- MODUS-EINSTELLUNG FÜR HIJRI-DATUM ---
 // 'api': Verwendet die Aladhan API für das Hijri-Datum.
 // 'manual': Verwendet die untenstehenden MANUAL_SETTINGS 
-export const HIJRI_MODE = 'manual'; // ÄNDERE DIES ZU 'api' oder 'manual'
+export const HIJRI_MODE = 'api'; // ÄNDERE DIES ZU 'api' oder 'manual'
 
 // --- EINSTELLUNGEN FÜR MANUAL_MODE ---
 // Diese Werte werden verwendet, wenn HIJRI_MODE = 'manual' ist.
