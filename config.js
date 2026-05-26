@@ -28,7 +28,7 @@
 // ║  MODUS 2 — HYBRID (API-Zeit + fester Offset, empfohlen):                 ║
 // ║    → setIshaTimeUI(...) in main.js auskommentieren:                      ║
 // ║       // setIshaTimeUI('19:50');                                         ║
-// ║    → tuneOffsets in config.js (Zeile 199), Position 7 auf gewünschten                ║
+// ║    → tuneOffsets in config.js (Zeile 199), Position 7 auf gewünschten    ║
 // ║      Offset in Minuten setzen:                                           ║
 // ║       tuneOffsets = '0,0,0,5,0,3,0,XX,0'  ← XX = Minuten                 ║
 // ║    Beispiele: XX=15 → API+15 Min / XX=30 → API+30 Min                    ║
@@ -169,11 +169,11 @@ export const sunriseConfig = {
 };
 
 export const eidPrayerConfig = {
-    showEidPrayer: false, // Auf true setzen, um Eid-Gebet anzuzeigen
+    showEidPrayer: true, // Auf true setzen, um Eid-Gebet anzuzeigen
     name: 'Eid', // Interner Name
     displayName: 'Eid Gebet',
-    dayOfEid: '2026-03-20', // Beispiel: YYYY-MM-DD Format. Passe dies an.
-    timeOfEid: '07:30', // Beispiel: HH:MM Format
+    dayOfEid: '2026-05-27', // Beispiel: YYYY-MM-DD Format. Passe dies an.
+    timeOfEid: '06:30', // Beispiel: HH:MM Format
     adhanDurationMinutes: 2,
     iqamaDurationMinutes: 10,
     // UI-Element-IDs für Titel (werden von sunriseConfig "geliehen" bzw. sind neu)
