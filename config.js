@@ -169,7 +169,7 @@ export const sunriseConfig = {
 };
 
 export const eidPrayerConfig = {
-    showEidPrayer: true, // Auf true setzen, um Eid-Gebet anzuzeigen
+    showEidPrayer: false, // Auf true setzen, um Eid-Gebet anzuzeigen
     name: 'Eid', // Interner Name
     displayName: 'Eid Gebet',
     dayOfEid: '2026-05-27', // Beispiel: YYYY-MM-DD Format. Passe dies an.
