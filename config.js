@@ -224,7 +224,7 @@ export const hijriMonthOrder = [
 // --- MODUS-EINSTELLUNG FÜR HIJRI-DATUM ---
 // 'api': Verwendet die Aladhan API für das Hijri-Datum.
 // 'manual': Verwendet die untenstehenden MANUAL_SETTINGS 
-export const HIJRI_MODE = 'api'; // ÄNDERE DIES ZU 'api' oder 'manual'
+export const HIJRI_MODE = 'manual'; // ÄNDERE DIES ZU 'api' oder 'manual'
 
 // --- EINSTELLUNGEN FÜR MANUAL_MODE ---
 // Diese Werte werden verwendet, wenn HIJRI_MODE = 'manual' ist.
@@ -233,13 +233,13 @@ export const MANUAL_SETTINGS = {
     // Der islamische Tag, der am Abend des START_GREGORIAN_DATE_STR beginnt.
     START_HIJRI_DAY: 1,
     // Der englische Schlüssel des Monats (muss in hijriMonthOrder und hijriMonthMap existieren).
-    START_HIJRI_MONTH_KEY: "Shawwāl",
+    START_HIJRI_MONTH_KEY: "Muharram",
     // Das islamische Jahr.
-    START_HIJRI_YEAR: 1447,
+    START_HIJRI_YEAR: 1448,
     // Das gregorianische Datum (Format YYYY-MM-DD), an dessen Abend (nach Maghrib)
     // der oben definierte START_HIJRI_DAY beginnt.
     // Beispiel: Wenn der 1. Ramadan am Abend des 27. Februar beginnt,
     // dann ist START_GREGORIAN_DATE_STR = "2025-02-27".
-    START_GREGORIAN_DATE_STR: "2026-03-19",
+    START_GREGORIAN_DATE_STR: "2026-06-16",
 };
 
