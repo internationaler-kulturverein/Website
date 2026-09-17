@@ -233,7 +233,7 @@ export const MANUAL_SETTINGS = {
     // Der islamische Tag, der am Abend des START_GREGORIAN_DATE_STR beginnt.
     START_HIJRI_DAY: 1,
     // Der englische Schlüssel des Monats (muss in hijriMonthOrder und hijriMonthMap existieren).
-    START_HIJRI_MONTH_KEY: "Rabī",
+    START_HIJRI_MONTH_KEY: "Rabī' al-awwal",
     // Das islamische Jahr.
     START_HIJRI_YEAR: 1448,
     // Das gregorianische Datum (Format YYYY-MM-DD), an dessen Abend (nach Maghrib)
