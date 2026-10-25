@@ -19,7 +19,7 @@
 // ║  Ist sie auskommentiert, bestimmt tuneOffsets den Modus.                 ║
 // ║                                                                          ║
 // ║  MODUS 1 — MANUELL (feste Zeit, unabhängig von der API):                 ║
-// ║    → setIshaTimeUI('19:50') in main.js aktiv lassen                      ║
+// ║    → setIshaTimeUI('19:50') in main.js 334 aktiv lassen                      ║
 // ║    → Zeit im Format 'HH:MM' anpassen                                     ║
 // ║    → tuneOffsets Position 7 wird komplett ignoriert                      ║
 // ║    Wann sinnvoll: Wenn man eine feste Zeit unabhängig von der            ║
